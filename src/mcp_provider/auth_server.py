@@ -25,7 +25,7 @@ from uvicorn import Config, Server
 from mcp.server.auth.routes import cors_middleware, create_auth_routes
 from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions
 
-from .simple_auth_provider import SimpleAuthSettings, SimpleOAuthProvider
+from .auth_provider.simple_auth_provider import SimpleAuthSettings, SimpleOAuthProvider
 
 logger = logging.getLogger(__name__)
 

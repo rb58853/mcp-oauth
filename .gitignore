@@ -1,0 +1,16 @@
+# Environment
+.env
+
+# Cache
+*.cpython-313.pyc
+
+#Publish files
+dist/*
+src/mcp_provider.egg-info/*
+
+#Text Editor
+.vscode/*
+
+#Dev Test
+test.py
+xbuild.md

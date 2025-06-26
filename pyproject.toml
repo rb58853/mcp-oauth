@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-oauth-provider"
+version = "0.0.1"
+authors = [{ name = "Raúl Beltrán Gómez", email = "rb58853@gmail.com" }]
+description = "OAuthprovider for mcp[cli] servers"
+readme = "readme.md"
+requires-python = ">=3.11"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["license*"]
+dependencies = ["starlette", "uvicorn", "mcp[cli]"]
+
+[project.urls]
+Homepage = "https://github.com/rb58853/mcp-oauth-provider"
+Issues = "https://github.com/rb58853/mcp-oauth-provider/issues"

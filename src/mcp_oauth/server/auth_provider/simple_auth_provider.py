@@ -56,7 +56,9 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
     3. Maintaining token state for introspection
     """
 
-    def __init__(self, settings: SimpleAuthSettings, auth_callback_url: str, server_url: str):
+    def __init__(
+        self, settings: SimpleAuthSettings, auth_callback_url: str, server_url: str
+    ):
         self.settings = settings
         self.auth_callback_url = auth_callback_url
         self.server_url = server_url
@@ -69,13 +71,19 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
 
     async def get_client(self, client_id: str) -> OAuthClientInformationFull | None:
         """Get OAuth client information."""
-        return self.clients.get(client_id)
+        return (
+            self.clients.get(client_id)
+            if self.clients.keys().__contains__(client_id)
+            else None
+        )
 
     async def register_client(self, client_info: OAuthClientInformationFull):
         """Register a new OAuth client."""
         self.clients[client_info.client_id] = client_info
 
-    async def authorize(self, client: OAuthClientInformationFull, params: AuthorizationParams) -> str:
+    async def authorize(
+        self, client: OAuthClientInformationFull, params: AuthorizationParams
+    ) -> str:
         """Generate an authorization URL for simple login flow."""
         state = params.state or secrets.token_hex(16)
 
@@ -83,13 +91,19 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         self.state_mapping[state] = {
             "redirect_uri": str(params.redirect_uri),
             "code_challenge": params.code_challenge,
-            "redirect_uri_provided_explicitly": str(params.redirect_uri_provided_explicitly),
+            "redirect_uri_provided_explicitly": str(
+                params.redirect_uri_provided_explicitly
+            ),
             "client_id": client.client_id,
             "resource": params.resource,  # RFC 8707
         }
 
         # Build simple login URL that points to login page
-        auth_url = f"{self.auth_callback_url}" f"?state={state}" f"&client_id={client.client_id}"
+        auth_url = (
+            f"{self.auth_callback_url}"
+            f"?state={state}"
+            f"&client_id={client.client_id}"
+        )
 
         return auth_url
 
@@ -146,13 +160,19 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
             raise HTTPException(400, "Missing username, password, or state parameter")
 
         # Ensure we have strings, not UploadFile objects
-        if not isinstance(username, str) or not isinstance(password, str) or not isinstance(state, str):
+        if (
+            not isinstance(username, str)
+            or not isinstance(password, str)
+            or not isinstance(state, str)
+        ):
             raise HTTPException(400, "Invalid parameter types")
 
         redirect_uri = await self.handle_simple_callback(username, password, state)
         return RedirectResponse(url=redirect_uri, status_code=302)
 
-    async def handle_simple_callback(self, username: str, password: str, state: str) -> str:
+    async def handle_simple_callback(
+        self, username: str, password: str, state: str
+    ) -> str:
         """Handle simple authentication callback and return redirect URI."""
         state_data = self.state_mapping.get(state)
         if not state_data:
@@ -160,7 +180,9 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
 
         redirect_uri = state_data["redirect_uri"]
         code_challenge = state_data["code_challenge"]
-        redirect_uri_provided_explicitly = state_data["redirect_uri_provided_explicitly"] == "True"
+        redirect_uri_provided_explicitly = (
+            state_data["redirect_uri_provided_explicitly"] == "True"
+        )
         client_id = state_data["client_id"]
         resource = state_data.get("resource")  # RFC 8707
 
@@ -170,7 +192,10 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         assert client_id is not None
 
         # Validate demo credentials
-        if username != self.settings.demo_username or password != self.settings.demo_password:
+        if (
+            username != self.settings.demo_username
+            or password != self.settings.demo_password
+        ):
             raise HTTPException(401, "Invalid credentials")
 
         # Create MCP authorization code
@@ -251,7 +276,9 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
 
         return access_token
 
-    async def load_refresh_token(self, client: OAuthClientInformationFull, refresh_token: str) -> RefreshToken | None:
+    async def load_refresh_token(
+        self, client: OAuthClientInformationFull, refresh_token: str
+    ) -> RefreshToken | None:
         """Load a refresh token - not supported in this example."""
         return None
 
@@ -264,7 +291,9 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         """Exchange refresh token - not supported in this example."""
         raise NotImplementedError("Refresh tokens not supported")
 
-    async def revoke_token(self, token: str, token_type_hint: str | None = None) -> None:
+    async def revoke_token(
+        self, token: str, token_type_hint: str | None = None
+    ) -> None:
         """Revoke a token."""
         if token in self.tokens:
             del self.tokens[token]

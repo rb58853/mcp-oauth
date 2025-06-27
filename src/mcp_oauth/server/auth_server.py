@@ -25,7 +25,7 @@ from uvicorn import Config, Server
 from mcp.server.auth.routes import cors_middleware, create_auth_routes
 from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions
 
-from .auth_provider.simple_auth_provider import SimpleAuthSettings, SimpleOAuthProvider
+from auth_provider.simple_auth_provider import SimpleAuthSettings, SimpleOAuthProvider
 
 logger = logging.getLogger(__name__)
 
@@ -165,11 +165,12 @@ def main(port: int) -> int:
     Uses simple hardcoded credentials for demo purposes.
     """
     logging.basicConfig(level=logging.INFO)
-
+    
     # Load simple auth settings
     auth_settings = SimpleAuthSettings()
 
     # Create server settings
+    # port = 9000
     host = "localhost"
     server_url = f"http://{host}:{port}"
     server_settings = AuthServerSettings(

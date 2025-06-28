@@ -52,6 +52,17 @@ class OAuthClient:
         self.client_secret = response.json["client_secret"]
         return response.json()
 
+    def get_client_info(self):
+        """"""
+        user_url: str = self.auth_url
+        params = {
+            "client_id": self.client_id,
+        }
+
+        response = self.session.get(user_url, params=params)
+        response.raise_for_status()
+        return response.json()
+
 
 def main():
     # Configuración del cliente OAuth

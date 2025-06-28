@@ -66,6 +66,7 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         self.auth_codes: dict[str, AuthorizationCode] = {}
         self.tokens: dict[str, AccessToken] = {}
         self.state_mapping: dict[str, dict[str, str | None]] = {}
+
         # Store authenticated user information
         self.user_data: dict[str, dict[str, Any]] = {}
 

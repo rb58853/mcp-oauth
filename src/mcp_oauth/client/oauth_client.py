@@ -195,15 +195,25 @@ class SimpleAuthClient:
         webbrowser.open(authorization_url)
 
     def register(self):
-        client_metadata: OAuthClientMetadata = OAuthClientMetadata(
-            redirect_uris=self.redirect_uris, client_name=self.client_name
-        )
-        self.oauth._register_oauth_client(
-            server_url=self.server_url,
-            client_metadata=client_metadata,
-        )
+        async def register_awaited():
+            client_metadata: OAuthClientMetadata = OAuthClientMetadata(
+                redirect_uris=self.redirect_uris, client_name=self.client_name
+            )
+            resp = await self.oauth._register_oauth_client(
+                server_url=self.server_url,
+                client_metadata=client_metadata,
+            )
+            return resp
+
+        return asyncio.run(register_awaited())
 
     async def connect(self):
         """Connect to the MCP server."""
+
         oauth_client: OAuthClientProvider = self.oauth
+
         print(f"🔗 Attempting to connect to {self.server_url}...")
+
+
+client = SimpleAuthClient(client_name="my_client")
+client.register()

@@ -6,8 +6,8 @@ from .features.callbacks import CallbackFunctions
 
 
 # TODO: Dar opcion a otras redirect_uris que no sea el server local
-class SimpleAuthClient:
-    """Simple MCP client with auth support."""
+class OAuthClient:
+    """MCP client with auth support."""
 
     def __init__(
         self,

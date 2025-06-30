@@ -1,4 +1,11 @@
-"""OAuthProvider server for "mcp[cli]" running in ram for dev"""
+"""
+OAuthProvider server for `"mcp[cli]"` running in RAM Memory for develop time.
 
-# from client.oauth_client import OAuthClient
-# __all__ = ["OAuthClient","OAuthServer"]
+`🔔 NOTE: We working on app "for production OAuth"`
+"""
+
+from client.oauth_client import OAuthClient
+from server.oauth_server import OAuthServer
+from server.token_verifier.token_verifier import IntrospectionTokenVerifier
+
+__all__ = ["OAuthClient", "OAuthServer", "IntrospectionTokenVerifier"]

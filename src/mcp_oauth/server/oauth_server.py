@@ -11,21 +11,18 @@ This is not a production-ready implementation.
 
 import asyncio
 import logging
-import time
 
-import click
 from pydantic import AnyHttpUrl, BaseModel
 from starlette.applications import Starlette
-from starlette.exceptions import HTTPException
-from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
 from uvicorn import Config, Server
 
-from mcp.server.auth.routes import cors_middleware, create_auth_routes
+from mcp.server.auth.routes import create_auth_routes
 from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions
+from mcp.server.auth.provider import OAuthAuthorizationServerProvider
 
-from auth_provider.simple_auth_provider import SimpleAuthSettings, SimpleOAuthProvider
+from .auth_provider.simple_auth_provider import SimpleAuthSettings, SimpleOAuthProvider
+from .features.functions import ExtraFunctions
 
 logger = logging.getLogger(__name__)
 
@@ -49,140 +46,84 @@ class SimpleAuthProvider(SimpleOAuthProvider):
     2. Stores token state for introspection by Resource Servers
     """
 
-    def __init__(self, auth_settings: SimpleAuthSettings, auth_callback_path: str, server_url: str):
+    def __init__(
+        self,
+        auth_settings: SimpleAuthSettings,
+        auth_callback_path: str,
+        server_url: str,
+    ):
         super().__init__(auth_settings, auth_callback_path, server_url)
 
 
-def create_authorization_server(server_settings: AuthServerSettings, auth_settings: SimpleAuthSettings) -> Starlette:
-    """Create the Authorization Server application."""
-    oauth_provider = SimpleAuthProvider(
-        auth_settings, server_settings.auth_callback_path, str(server_settings.server_url)
-    )
+class OAuthServer:
+    def __init__(
+        self,
+        auth_settings: SimpleAuthSettings = SimpleAuthSettings(),
+        server_settings: AuthServerSettings = AuthServerSettings(),
+    ):
+        self.auth_settings: SimpleAuthSettings = auth_settings
+        self.server_settings: AuthServerSettings = server_settings
 
-    mcp_auth_settings = AuthSettings(
-        issuer_url=server_settings.server_url,
-        client_registration_options=ClientRegistrationOptions(
-            enabled=True,
-            valid_scopes=[auth_settings.mcp_scope],
-            default_scopes=[auth_settings.mcp_scope],
-        ),
-        required_scopes=[auth_settings.mcp_scope],
-        resource_server_url=None,
-    )
-
-    # Create OAuth routes
-    routes = create_auth_routes(
-        provider=oauth_provider,
-        issuer_url=mcp_auth_settings.issuer_url,
-        service_documentation_url=mcp_auth_settings.service_documentation_url,
-        client_registration_options=mcp_auth_settings.client_registration_options,
-        revocation_options=mcp_auth_settings.revocation_options,
-    )
-
-    # Add login page route (GET)
-    async def login_page_handler(request: Request) -> Response:
-        """Show login form."""
-        state = request.query_params.get("state")
-        if not state:
-            raise HTTPException(400, "Missing state parameter")
-        return await oauth_provider.get_login_page(state)
-
-    routes.append(Route("/login", endpoint=login_page_handler, methods=["GET"]))
-
-    # Add login callback route (POST)
-    async def login_callback_handler(request: Request) -> Response:
-        """Handle simple authentication callback."""
-        return await oauth_provider.handle_login_callback(request)
-
-    routes.append(Route("/login/callback", endpoint=login_callback_handler, methods=["POST"]))
-
-    # Add token introspection endpoint (RFC 7662) for Resource Servers
-    async def introspect_handler(request: Request) -> Response:
-        """
-        Token introspection endpoint for Resource Servers.
-
-        Resource Servers call this endpoint to validate tokens without
-        needing direct access to token storage.
-        """
-        form = await request.form()
-        token = form.get("token")
-        if not token or not isinstance(token, str):
-            return JSONResponse({"active": False}, status_code=400)
-
-        # Look up token in provider
-        access_token = await oauth_provider.load_access_token(token)
-        if not access_token:
-            return JSONResponse({"active": False})
-
-        return JSONResponse(
-            {
-                "active": True,
-                "client_id": access_token.client_id,
-                "scope": " ".join(access_token.scopes),
-                "exp": access_token.expires_at,
-                "iat": int(time.time()),
-                "token_type": "Bearer",
-                "aud": access_token.resource,  # RFC 8707 audience claim
-            }
+        self.oauth_provider: OAuthAuthorizationServerProvider = SimpleAuthProvider(
+            auth_settings,
+            server_settings.auth_callback_path,
+            str(self.server_settings.server_url),
         )
+        self.__routes: list[Route] | None = None
 
-    routes.append(
-        Route(
-            "/introspect",
-            endpoint=cors_middleware(introspect_handler, ["POST", "OPTIONS"]),
-            methods=["POST", "OPTIONS"],
-        )
-    )
+    @property
+    def routes(self) -> list[Route]:
+        """Create Routes"""
+        if self.__routes is None:
+            # Create Settings
+            mcp_auth_settings = AuthSettings(
+                issuer_url=self.server_settings.server_url,
+                client_registration_options=ClientRegistrationOptions(
+                    enabled=True,
+                    valid_scopes=[self.auth_settings.mcp_scope],
+                    default_scopes=[self.auth_settings.mcp_scope],
+                ),
+                required_scopes=[self.auth_settings.mcp_scope],
+                resource_server_url=None,
+            )
 
-    return Starlette(routes=routes)
+            # Create OAuth routes
+            routes: list[Route] = create_auth_routes(
+                provider=self.oauth_provider,
+                issuer_url=mcp_auth_settings.issuer_url,
+                service_documentation_url=mcp_auth_settings.service_documentation_url,
+                client_registration_options=mcp_auth_settings.client_registration_options,
+                revocation_options=mcp_auth_settings.revocation_options,
+            )
 
+            # Append extra functions to routes
+            ExtraFunctions(oauth_provider=self.oauth_provider).append_functions(
+                routes=routes
+            )
+            self.__routes = routes
 
-async def run_server(server_settings: AuthServerSettings, auth_settings: SimpleAuthSettings):
-    """Run the Authorization Server."""
-    auth_server = create_authorization_server(server_settings, auth_settings)
+        return self.__routes
 
-    config = Config(
-        auth_server,
-        host=server_settings.host,
-        port=server_settings.port,
-        log_level="info",
-    )
-    server = Server(config)
+    def append_new_function(function):
+        raise NotImplementedError()
 
-    logger.info(f"🚀 MCP Authorization Server running on {server_settings.server_url}")
+    def run_starlette_server(self) -> None:
+        """Run the Authorization Starlette Server."""
 
-    await server.serve()
+        async def run_server() -> None:
+            starlette_server = Starlette(routes=self.routes)
 
+            config = Config(
+                starlette_server,
+                host=self.server_settings.host,
+                port=self.server_settings.port,
+                log_level="info",
+            )
+            server = Server(config)
 
-@click.command()
-@click.option("--port", default=9000, help="Port to listen on")
-def main(port: int) -> int:
-    """
-    Run the MCP Authorization Server.
+            logger.info(
+                f"🚀 MCP Authorization Starlette Server running on {self.server_settings.server_url}"
+            )
+            await server.serve()
 
-    This server handles OAuth flows and can be used by multiple Resource Servers.
-
-    Uses simple hardcoded credentials for demo purposes.
-    """
-    logging.basicConfig(level=logging.INFO)
-    
-    # Load simple auth settings
-    auth_settings = SimpleAuthSettings()
-
-    # Create server settings
-    # port = 9000
-    host = "localhost"
-    server_url = f"http://{host}:{port}"
-    server_settings = AuthServerSettings(
-        host=host,
-        port=port,
-        server_url=AnyHttpUrl(server_url),
-        auth_callback_path=f"{server_url}/login",
-    )
-
-    asyncio.run(run_server(server_settings, auth_settings))
-    return 0
-
-
-if __name__ == "__main__":
-    main()  # type: ignore[call-arg]
+        asyncio.run(run_server())

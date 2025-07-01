@@ -1,8 +1,6 @@
-from pydantic import BaseModel
-from ....src.mcp_oauth.server.oauth_server import OAuthServer
+from ....mcp_oauth.server.oauth_server import OAuthServer
 from uvicorn import Config, Server
-from mcp_server import mcp, FastMCP, server_settings
-
+from .api import app, server_settings
 import asyncio
 import logging
 
@@ -15,9 +13,6 @@ def run_oauth_server():
 
 
 def sample_fastapi_mcp_server():
-    mcp = None
-    app = None
-
     async def uvicorn_run():
         config = Config(
             app,
@@ -32,5 +27,4 @@ def sample_fastapi_mcp_server():
         await server.serve()
 
     asyncio.run(uvicorn_run())
-
     return app

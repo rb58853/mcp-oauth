@@ -1,10 +1,16 @@
+import contextlib
+from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from mcp.server.fastmcp import FastMCP
 from mcp.server.auth.settings import AuthSettings
 from pydantic import AnyHttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from ....src.mcp_oauth.server.token_verifier.token_verifier import (
+from ....mcp_oauth.server.token_verifier.token_verifier import (
     IntrospectionTokenVerifier,
 )
+
+import contextlib
+from fastapi import FastAPI, HTTPException
 
 
 class ServerSettings(BaseSettings):
@@ -29,7 +35,7 @@ class ServerSettings(BaseSettings):
     oauth_strict: bool = False
 
 
-def mcp_server(settings: ServerSettings = ServerSettings()) -> FastMCP:
+def create_mcp_server(settings: ServerSettings = ServerSettings()) -> FastMCP:
     token_verifier = IntrospectionTokenVerifier(
         introspection_endpoint=settings.auth_server_introspection_endpoint,
         server_url=str(settings.server_url),
@@ -68,5 +74,44 @@ def mcp_server(settings: ServerSettings = ServerSettings()) -> FastMCP:
     return mcp
 
 
+def create_app(
+    servers: list[FastMCP],
+    settings: ServerSettings = ServerSettings(),
+) -> FastAPI:
+
+    # Create a combined lifespan to manage both session managers
+    @contextlib.asynccontextmanager
+    async def lifespan(app: FastAPI):
+        async with contextlib.AsyncExitStack() as stack:
+            for server in servers:
+                await stack.enter_async_context(server.session_manager.run())
+            yield
+
+    app = FastAPI(lifespan=lifespan)
+    for server in servers:
+        app.mount(
+            f"/{server.name}",
+            server.streamable_http_app(),
+        )
+
+    @app.get("/")
+    async def redirect_to_help():
+        return RedirectResponse(url="/aviable-servers")
+
+    @app.get("/aviable-servers", include_in_schema=False)
+    async def aviable_servers():
+        return {
+            "aviable-servers": [
+                f"http://{settings.host}:{settings.port}/{server.name}/mcp"
+                for server in servers
+            ]
+        }
+
+    return app
+
+
 server_settings: ServerSettings = ServerSettings()
-mcp: FastMCP = mcp_server(settings=server_settings)
+app: FastAPI = create_app(
+    servers=[create_mcp_server(settings=server_settings)],
+    settings=server_settings,
+)

@@ -1,4 +1,4 @@
-from .services.client import sample_mcp_client
+from .services.client.client import sample_mcp_client
 
 
 def run():

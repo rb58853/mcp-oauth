@@ -106,10 +106,17 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
 
     async def handle_login_callback(self, request: Request) -> Response:
         """Handle login form submission callback."""
-        form = await request.form()
-        username = form.get("username")
-        password = form.get("password")
-        state = form.get("state")
+        if request.method == "POST":
+            form = await request.form()
+            username = form.get("username")
+            password = form.get("password")
+            state = form.get("state")
+
+        if request.method == "GET":
+            params = request.query_params
+            username = params.get("username")
+            password = params.get("password")
+            state = params.get("state")
 
         if not username or not password or not state:
             raise HTTPException(400, "Missing username, password, or state parameter")
@@ -252,3 +259,45 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         """Revoke a token."""
         if token in self.tokens:
             del self.tokens[token]
+
+    async def get_login_page(self, state: str) -> HTMLResponse:
+        """Generate login page HTML for the given state."""
+        if not state:
+            raise HTTPException(400, "Missing state parameter")
+
+        # Create simple login form HTML
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>MCP Demo Authentication</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; }}
+                .form-group {{ margin-bottom: 15px; }}
+                input {{ width: 100%; padding: 8px; margin-top: 5px; }}
+                button {{ background-color: #4CAF50; color: white; padding: 10px 15px; border: none; cursor: pointer; }}
+            </style>
+        </head>
+        <body>
+            <h2>MCP Demo Authentication</h2>
+            <p>This is a simplified authentication demo. Use the demo credentials below:</p>
+            <p><strong>Username:</strong> demo_user<br>
+            <strong>Password:</strong> demo_password</p>
+            
+            <form action="{self.server_url.rstrip('/')}/login/callback" method="post">
+                <input type="hidden" name="state" value="{state}">
+                <div class="form-group">
+                    <label>Username:</label>
+                    <input type="text" name="username" value="demo_user" required>
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" name="password" value="demo_password" required>
+                </div>
+                <button type="submit">Sign In</button>
+            </form>
+        </body>
+        </html>
+        """
+
+        return HTMLResponse(content=html_content)

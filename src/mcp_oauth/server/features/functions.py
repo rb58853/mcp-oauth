@@ -1,6 +1,7 @@
 import logging
 import time
 from mcp.server.auth.provider import OAuthAuthorizationServerProvider
+from ..auth_provider.simple_auth_provider import SimpleOAuthProvider
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
@@ -11,8 +12,12 @@ logger = logging.getLogger(__name__)
 
 
 class ExtraFunctions:
-    def __init__(self, oauth_provider: OAuthAuthorizationServerProvider):
-        self.oauth_provider: OAuthAuthorizationServerProvider = oauth_provider
+    def __init__(
+        self, oauth_provider: SimpleOAuthProvider | OAuthAuthorizationServerProvider
+    ):
+        self.oauth_provider: SimpleOAuthProvider | OAuthAuthorizationServerProvider = (
+            oauth_provider
+        )
 
     def append_functions(self, routes: list[Route]) -> None:
         # Add login page route (GET)
@@ -61,7 +66,8 @@ class ExtraFunctions:
             Route(
                 "/login/callback",
                 endpoint=login_callback_handler,
-                methods=["POST"],
+                methods=["POST","GET"],
+                # methods=["POST"],
             )
         )
         routes.append(

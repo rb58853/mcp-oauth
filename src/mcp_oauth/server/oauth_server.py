@@ -12,6 +12,7 @@ This is not a production-ready implementation.
 import asyncio
 import logging
 
+from fastapi import Request, Response
 from pydantic import AnyHttpUrl, BaseModel
 from starlette.applications import Starlette
 from starlette.routing import Route
@@ -23,6 +24,9 @@ from mcp.server.auth.provider import OAuthAuthorizationServerProvider
 
 from .auth_provider.simple_auth_provider import SimpleAuthSettings, SimpleOAuthProvider
 from .features.functions import ExtraFunctions
+
+from starlette.requests import Request
+from starlette.responses import Response
 
 logger = logging.getLogger(__name__)
 
@@ -64,10 +68,12 @@ class OAuthServer:
         self.auth_settings: SimpleAuthSettings = auth_settings
         self.server_settings: AuthServerSettings = server_settings
 
-        self.oauth_provider: OAuthAuthorizationServerProvider = SimpleAuthProvider(
-            auth_settings,
-            server_settings.auth_callback_path,
-            str(self.server_settings.server_url),
+        self.oauth_provider: SimpleAuthProvider | OAuthAuthorizationServerProvider = (
+            SimpleAuthProvider(
+                auth_settings,
+                server_settings.auth_callback_path,
+                str(self.server_settings.server_url),
+            )
         )
         self.__routes: list[Route] | None = None
 
@@ -96,10 +102,12 @@ class OAuthServer:
                 revocation_options=mcp_auth_settings.revocation_options,
             )
 
-            # Append extra functions to routes
+           
+            # # Append extra functions to routes
             ExtraFunctions(oauth_provider=self.oauth_provider).append_functions(
                 routes=routes
             )
+
             self.__routes = routes
 
         return self.__routes

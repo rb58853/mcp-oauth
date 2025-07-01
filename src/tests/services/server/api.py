@@ -9,9 +9,6 @@ from ....mcp_oauth.server.token_verifier.token_verifier import (
     IntrospectionTokenVerifier,
 )
 
-import contextlib
-from fastapi import FastAPI, HTTPException
-
 
 class ServerSettings(BaseSettings):
     """Settings for the MCP Server."""
@@ -43,7 +40,7 @@ def create_mcp_server(settings: ServerSettings = ServerSettings()) -> FastMCP:
     )
 
     mcp: FastMCP = FastMCP(
-        name="private-example-server",
+        name="example-server",
         instructions="This server specializes in private operations of user profiles data",
         debug=True,
         # Auth configuration for RS mode

@@ -9,14 +9,13 @@ from mcp.client.streamable_http import streamablehttp_client
 
 def sample_mcp_client():
     # Es necesario tener un servidor MCP corriendo en la direccion http://127.0.0.1:8000//example-server/mcp por httpstream
-    server_url: str = "http://127.0.0.1:8000//example-server/mcp"
+    server_url: str = "http://127.0.0.1:8000/example-server/mcp"
 
     # Es necesario tener un servidor OAuth corriendo en la direccion http://localhost:9000
     oauth_client: OAuthClient = OAuthClient(client_name="sample_client")
 
-    print("📡 Opening StreamableHTTP transport connection with auth...")
-
     async def open_session():
+        print("📡 Opening StreamableHTTP transport connection with auth...")
         async with streamablehttp_client(
             url=server_url,
             auth=oauth_client.oauth,

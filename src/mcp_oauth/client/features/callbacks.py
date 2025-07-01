@@ -68,6 +68,7 @@ class CallbackServer:
         self.server = None
         self.thread = None
         self.callback_data = {"authorization_code": None, "state": None, "error": None}
+        # self.is_started: bool = False
 
     def _create_handler_with_data(self):
         """Create a handler class with access to callback data."""
@@ -81,6 +82,7 @@ class CallbackServer:
 
     def start(self):
         """Start the callback server in a background thread."""
+        # if not self.is_started:
         handler_class = self._create_handler_with_data()
         self.server = HTTPServer(("localhost", self.port), handler_class)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
@@ -115,8 +117,12 @@ class CallbackFunctions:
     def __init__(self, port: int = 3030):
         self.port = port
 
+        # Now start callback server only firts time
+        # self.callback_server = CallbackServer(port=self.port)
+        # self.callback_server.start()
+
     async def callback_handler(self) -> tuple[str, str | None]:
-        # callback_server = CallbackServer(port=3030)
+        # callback_server = self.callback_server
         callback_server = CallbackServer(port=self.port)
         callback_server.start()
 

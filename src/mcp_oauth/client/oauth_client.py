@@ -12,15 +12,21 @@ class OAuthClient:
     def __init__(
         self,
         client_name: str,
+        authorized_username: str,
+        authorized_username_password: str,
         server_url: str = "http://localhost:9000",
         # redirect_uris: list[str] = ["http://localhost:3030/callback"],
         redirect_uri_port=3030,
     ):
-        self.client_name = client_name
-        self.redirect_uri_port = redirect_uri_port
-        self.redirect_uris = [f"http://localhost:{redirect_uri_port}/callback"]
+        self.client_name: str = client_name
+        self.redirect_uri_port: int = redirect_uri_port
+        self.redirect_uris: list[str] = [
+            f"http://localhost:{redirect_uri_port}/callback"
+        ]
         # self.redirect_uris = redirect_uris
-        self.server_url = server_url
+        self.server_url: str = server_url
+        self.authorized_username: str = authorized_username
+        self.authorized_username_password: str = authorized_username_password
 
         self.__oauth: OAuthClientProvider | None = None
         """private class variable"""
@@ -32,7 +38,9 @@ class OAuthClient:
 
         try:
             callback_functions: CallbackFunctions = CallbackFunctions(
-                self.redirect_uri_port
+                username=self.authorized_username,
+                password=self.authorized_username_password,
+                port=self.redirect_uri_port,
             )
             client_metadata_dict = {
                 "client_name": self.client_name,

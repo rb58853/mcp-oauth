@@ -114,8 +114,9 @@ class CallbackServer:
 
 
 class CallbackFunctions:
-    def __init__(self, port: int = 3030):
+    def __init__(self, username: str, password: str, port: int = 3030):
         self.port = port
+        self.username = password
 
         # Now start callback server only firts time
         # self.callback_server = CallbackServer(port=self.port)
@@ -136,5 +137,6 @@ class CallbackFunctions:
 
     async def _default_redirect_handler(self, authorization_url: str) -> None:
         """Default redirect handler that opens the URL in a browser."""
+        authorization_url += f"&username={self.username}&password={self.password}"
         print(f"Opening browser for authorization: {authorization_url}")
         webbrowser.open(authorization_url)

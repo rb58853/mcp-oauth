@@ -7,6 +7,12 @@ for demonstration purposes. No external authentication provider is required.
 NOTE: this is a simplified example for demonstration purposes.
 This is not a production-ready implementation.
 
+TODO:
+- Create a database for clients with, for example, MongoDB
+- Also create a Database and interaction for authorized user by a superuser that create its.
+
+
+
 """
 
 import logging
@@ -71,6 +77,8 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         self.tokens: dict[str, AccessToken] = {}
         self.state_mapping: dict[str, dict[str, str | None]] = {}
         self.expired_at: int = expired_at
+        self.authotized_users: dict[str, str] = {"demo_user": "demo_password"}
+        """autorized users"""
 
         # Store authenticated user information
         self.user_data: dict[str, dict[str, Any]] = {}
@@ -113,14 +121,13 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         """Handle login form submission callback."""
         if request.method == "POST":
             form = await request.form()
-            username = form.get("username")
-            password = form.get("password")
+            # username = form.get("username")
+            # password = form.get("password")
             state = form.get("state")
+            client_id = form.get("client_id")
 
         if request.method == "GET":
             params = request.query_params
-            username = params.get("username")
-            password = params.get("password")
             state = params.get("state")
             client_id = params.get("client_id")
 

@@ -37,7 +37,7 @@ def sample_mcp_client():
                         print(f"Session ID: {session_id}")
 
                 tools = await session.list_tools()
-                
+
                 print("\n⚙️  Aviable Tools")
                 for tool in tools.tools:
                     print(f"   • {tool.name}: {tool.description}")

@@ -144,5 +144,4 @@ class CallbackFunctions:
     async def _default_redirect_handler(self, authorization_url: str) -> None:
         """Default redirect handler that GET the URL from requests."""
         self.callback_server.start()
-        params = {"username": {self.username}, "password": {self.password}}
-        response = requests.get(authorization_url, params=params)
+        response = requests.get(authorization_url)

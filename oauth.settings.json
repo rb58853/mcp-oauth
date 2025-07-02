@@ -1,6 +1,4 @@
 {
-    "username": "user",
-    "password": "password",
     "port": 9000,
     "service_documentation_url": null,
     "scopes": [

@@ -3,6 +3,7 @@ import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
+import requests
 
 
 class CallbackHandler(BaseHTTPRequestHandler):
@@ -68,7 +69,7 @@ class CallbackServer:
         self.server = None
         self.thread = None
         self.callback_data = {"authorization_code": None, "state": None, "error": None}
-        # self.is_started: bool = False
+        self.is_started: bool = False
 
     def _create_handler_with_data(self):
         """Create a handler class with access to callback data."""
@@ -82,12 +83,15 @@ class CallbackServer:
 
     def start(self):
         """Start the callback server in a background thread."""
-        # if not self.is_started:
-        handler_class = self._create_handler_with_data()
-        self.server = HTTPServer(("localhost", self.port), handler_class)
-        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
-        self.thread.start()
-        print(f"🖥️  Started callback server on http://localhost:{self.port}")
+        if not self.is_started:
+            self.is_started = True
+            handler_class = self._create_handler_with_data()
+            self.server = HTTPServer(("localhost", self.port), handler_class)
+            self.thread = threading.Thread(
+                target=self.server.serve_forever, daemon=True
+            )
+            self.thread.start()
+            print(f"🖥️  Started callback server on http://localhost:{self.port}")
 
     def stop(self):
         """Stop the callback server."""
@@ -96,6 +100,7 @@ class CallbackServer:
             self.server.server_close()
         if self.thread:
             self.thread.join(timeout=1)
+        self.is_started = False
 
     def wait_for_callback(self, timeout=300):
         """Wait for OAuth callback with timeout."""
@@ -116,16 +121,17 @@ class CallbackServer:
 class CallbackFunctions:
     def __init__(self, username: str, password: str, port: int = 3030):
         self.port = port
-        self.username = password
+        self.username = username
+        self.password = password
 
         # Now start callback server only firts time
-        # self.callback_server = CallbackServer(port=self.port)
+        self.callback_server = CallbackServer(port=self.port)
         # self.callback_server.start()
 
     async def callback_handler(self) -> tuple[str, str | None]:
-        # callback_server = self.callback_server
-        callback_server = CallbackServer(port=self.port)
-        callback_server.start()
+        callback_server = self.callback_server
+        # callback_server = CallbackServer(port=self.port)
+        # callback_server.start()
 
         """Wait for OAuth callback and return auth code and state."""
         print("⏳ Waiting for authorization callback...")
@@ -136,7 +142,7 @@ class CallbackFunctions:
             callback_server.stop()
 
     async def _default_redirect_handler(self, authorization_url: str) -> None:
-        """Default redirect handler that opens the URL in a browser."""
-        authorization_url += f"&username={self.username}&password={self.password}"
-        print(f"Opening browser for authorization: {authorization_url}")
-        webbrowser.open(authorization_url)
+        """Default redirect handler that GET the URL from requests."""
+        self.callback_server.start()
+        params = {"username": {self.username}, "password": {self.password}}
+        response = requests.get(authorization_url, params=params)

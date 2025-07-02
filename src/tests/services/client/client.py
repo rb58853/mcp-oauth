@@ -12,7 +12,11 @@ def sample_mcp_client():
     server_url: str = "http://127.0.0.1:8000/example-server/mcp"
 
     # Es necesario tener un servidor OAuth corriendo en la direccion http://localhost:9000
-    oauth_client: OAuthClient = OAuthClient(client_name="sample_client")
+    oauth_client: OAuthClient = OAuthClient(
+        client_name="sample_client",
+        authorized_username="user",
+        authorized_username_password="password",
+    )
 
     async def open_session():
         print("📡 Opening StreamableHTTP transport connection with auth...")
@@ -31,5 +35,11 @@ def sample_mcp_client():
                     session_id = get_session_id()
                     if session_id:
                         print(f"Session ID: {session_id}")
+
+                tools = await session.list_tools()
+                
+                print("\n⚙️  Aviable Tools")
+                for tool in tools.tools:
+                    print(f"   • {tool.name}: {tool.description}")
 
     asyncio.run(open_session())

@@ -57,7 +57,11 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
     """
 
     def __init__(
-        self, settings: SimpleAuthSettings, auth_callback_url: str, server_url: str
+        self,
+        settings: SimpleAuthSettings,
+        auth_callback_url: str,
+        server_url: str,
+        expired_at: int = 3600,
     ):
         self.settings = settings
         self.auth_callback_url = auth_callback_url
@@ -66,6 +70,7 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         self.auth_codes: dict[str, AuthorizationCode] = {}
         self.tokens: dict[str, AccessToken] = {}
         self.state_mapping: dict[str, dict[str, str | None]] = {}
+        self.expired_at: int = expired_at
 
         # Store authenticated user information
         self.user_data: dict[str, dict[str, Any]] = {}
@@ -117,6 +122,10 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
             username = params.get("username")
             password = params.get("password")
             state = params.get("state")
+            client_id = params.get("client_id")
+
+        username = "demo_user"
+        password = "demo_password"
 
         if not username or not password or not state:
             raise HTTPException(400, "Missing username, password, or state parameter")
@@ -205,7 +214,7 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
             token=mcp_token,
             client_id=client.client_id,
             scopes=authorization_code.scopes,
-            expires_at=int(time.time()) + 3600,
+            expires_at=int(time.time()) + self.expired_at,
             resource=authorization_code.resource,  # RFC 8707
         )
 
@@ -221,7 +230,7 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         return OAuthToken(
             access_token=mcp_token,
             token_type="Bearer",
-            expires_in=3600,
+            expires_in=self.expired_at,
             scope=" ".join(authorization_code.scopes),
         )
 

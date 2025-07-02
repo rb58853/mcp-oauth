@@ -35,12 +35,16 @@ class IntrospectionTokenVerifier(TokenVerifier):
         import httpx
 
         # Validate URL to prevent SSRF attacks
-        if not self.introspection_endpoint.startswith(("https://", "http://localhost", "http://127.0.0.1")):
-            logger.warning(f"Rejecting introspection endpoint with unsafe scheme: {self.introspection_endpoint}")
+        if not self.introspection_endpoint.startswith(
+            ("https://", "http://localhost", "http://127.0.0.1")
+        ):
+            logger.warning(
+                f"Rejecting introspection endpoint with unsafe scheme: {self.introspection_endpoint}"
+            )
             return None
 
         # Configure secure HTTP client
-        timeout = httpx.Timeout(10.0, connect=5.0)
+        timeout = httpx.Timeout(100.0, connect=50.0)  # New: (timeout & connect)*10
         limits = httpx.Limits(max_connections=10, max_keepalive_connections=5)
 
         async with httpx.AsyncClient(
@@ -54,20 +58,20 @@ class IntrospectionTokenVerifier(TokenVerifier):
                     data={"token": token},
                     headers={"Content-Type": "application/x-www-form-urlencoded"},
                 )
-
                 if response.status_code != 200:
-                    logger.debug(f"Token introspection returned status {response.status_code}")
+                    logger.debug(
+                        f"Token introspection returned status {response.status_code}"
+                    )
                     return None
-
                 data = response.json()
                 if not data.get("active", False):
                     return None
-
                 # RFC 8707 resource validation (only when --oauth-strict is set)
                 if self.validate_resource and not self._validate_resource(data):
-                    logger.warning(f"Token resource validation failed. Expected: {self.resource_url}")
+                    logger.warning(
+                        f"Token resource validation failed. Expected: {self.resource_url}"
+                    )
                     return None
-
                 return AccessToken(
                     token=token,
                     client_id=data.get("client_id", "unknown"),
@@ -76,7 +80,10 @@ class IntrospectionTokenVerifier(TokenVerifier):
                     resource=data.get("aud"),  # Include resource in token
                 )
             except Exception as e:
-                logger.warning(f"Token introspection failed: {e}")
+                if str(e) == "":
+                    logger.warning(f"Token introspection failed: timeout error")
+                else:
+                    logger.warning(f"Token introspection failed: {e}")
                 return None
 
     def _validate_resource(self, token_data: dict) -> bool:
@@ -102,4 +109,6 @@ class IntrospectionTokenVerifier(TokenVerifier):
         if not self.resource_url:
             return False
 
-        return check_resource_allowed(requested_resource=self.resource_url, configured_resource=resource)
+        return check_resource_allowed(
+            requested_resource=self.resource_url, configured_resource=resource
+        )

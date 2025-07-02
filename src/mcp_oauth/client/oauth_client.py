@@ -15,15 +15,15 @@ class OAuthClient:
         authorized_username: str,
         authorized_username_password: str,
         server_url: str = "http://localhost:9000",
-        # redirect_uris: list[str] = ["http://localhost:3030/callback"],
+        redirect_uris: list[str] = ["http://localhost:3030/callback"],
         redirect_uri_port=3030,
     ):
         self.client_name: str = client_name
         self.redirect_uri_port: int = redirect_uri_port
-        self.redirect_uris: list[str] = [
-            f"http://localhost:{redirect_uri_port}/callback"
-        ]
-        # self.redirect_uris = redirect_uris
+        # self.redirect_uris: list[str] = [
+        #     f"http://localhost:{redirect_uri_port}/callback"
+        # ]
+        self.redirect_uris = redirect_uris
         self.server_url: str = server_url
         self.authorized_username: str = authorized_username
         self.authorized_username_password: str = authorized_username_password

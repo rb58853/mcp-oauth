@@ -13,13 +13,22 @@ class FileTokenStorage(TokenStorage):
     """Simple in-file token storage implementation."""
 
     def __init__(self, server_name: str):
-        tokens = None
         self.server_name: str = server_name
-        self.data: dict[dict[str, str]] = {}
+        self.data: dict[str, dict[str, str]] = {}
         self.__load_data()
 
-        self._tokens: OAuthToken | None = tokens
+        self._tokens: OAuthToken | None = None
         self._client_info: OAuthClientInformationFull | None = None
+
+        if self.data.keys().__contains__(self.server_name):
+            if self.data[self.server_name].keys().__contains__("OAuthToken"):
+                self._tokens = Criptografy.get_oauthtoken(
+                    self.data[self.server_name]["OAuthToken"]
+                )
+            if self.data[self.server_name].keys().__contains__("ClientInfo"):
+                self._client_info = Criptografy.get_clientinfo(
+                    self.data[self.server_name]["ClientInfo"]
+                )
 
     async def get_tokens(self) -> OAuthToken | None:
         return self._tokens
@@ -76,7 +85,7 @@ class Criptografy:
         return encoded_jwt
 
     def get_oauthtoken(token: str) -> OAuthToken:
-        payload = jwt.decode(token, Criptografy, algorithms=["HS256"])
+        payload = jwt.decode(token, CRIPTOGRAFY_KEY, algorithms=["HS256"])
         payload = payload["base_model"]
         oauthtoken: OAuthToken = OAuthToken.model_validate_json(payload)
         return oauthtoken
@@ -87,7 +96,7 @@ class Criptografy:
         return encoded_jwt
 
     def get_clientinfo(token: str) -> OAuthClientInformationFull:
-        payload = jwt.decode(token, Criptografy, algorithms=["HS256"])
+        payload = jwt.decode(token, CRIPTOGRAFY_KEY, algorithms=["HS256"])
         payload = payload["base_model"]
         client_info: OAuthClientInformationFull = (
             OAuthClientInformationFull.model_validate_json(payload)

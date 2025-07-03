@@ -1,7 +1,7 @@
 import asyncio
 from mcp.client.auth import OAuthClientProvider
 from mcp.shared.auth import OAuthClientMetadata
-from .features.token_storage import InMemoryTokenStorage
+from .features.token_storage import FileTokenStorage
 from .features.callbacks import CallbackFunctions
 
 
@@ -55,7 +55,7 @@ class OAuthClient:
                 client_metadata=OAuthClientMetadata.model_validate(
                     client_metadata_dict
                 ),
-                storage=InMemoryTokenStorage(),
+                storage=FileTokenStorage(),
                 redirect_handler=callback_functions._default_redirect_handler,
                 callback_handler=callback_functions.callback_handler,
             )

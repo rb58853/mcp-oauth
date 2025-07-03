@@ -3,10 +3,10 @@ requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mcp-oauth-provider"
+name = "mcp-oauth"
 version = "0.0.1"
 authors = [{ name = "Raúl Beltrán Gómez", email = "rb58853@gmail.com" }]
-description = "OAuthprovider for mcp[cli] servers"
+description = "OAuth2.1 server and client for mcp[cli]"
 readme = "readme.md"
 requires-python = ">=3.11"
 classifiers = [

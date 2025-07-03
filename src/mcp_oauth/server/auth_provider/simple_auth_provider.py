@@ -119,6 +119,8 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
 
     async def handle_login_callback(self, request: Request) -> Response:
         """Handle login form submission callback."""
+        headers = request.headers
+        
         if request.method == "POST":
             form = await request.form()
             # username = form.get("username")

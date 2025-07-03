@@ -55,7 +55,7 @@ class OAuthClient:
                 client_metadata=OAuthClientMetadata.model_validate(
                     client_metadata_dict
                 ),
-                storage=FileTokenStorage(),
+                storage=FileTokenStorage(server_name=self.server_url),
                 redirect_handler=callback_functions._default_redirect_handler,
                 callback_handler=callback_functions.callback_handler,
             )

@@ -14,4 +14,6 @@ src/mcp_provider.egg-info/*
 #Dev Test
 test.py
 xbuild.md
-.env.oauth.client
+
+#Data
+data/*

@@ -7,9 +7,9 @@ def generate_criptografy_key(add2env: bool = True):
     key = Fernet.generate_key().decode()
     keep = "no"
     if add2env:
-        keep = input("")
+        keep = input("Warning. To continue the operation type (y/yes).")
         if keep == "y" or keep == "yes":
-            write_key_to_file(key=key, name="CRIPTOGRAFY-KEY")
+            write_key_to_file(key=key, name="CRIPTOGRAFY_KEY")
 
     print(
         f"criptografy_key: {key}"

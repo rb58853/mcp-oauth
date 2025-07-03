@@ -4,6 +4,8 @@ import os
 def write_key_to_file(key, name, file_path=".env", override: bool = True) -> None:
     base_dir = os.getcwd()
     file_path = os.path.join(base_dir, file_path)
+    dir_path = "/".join(file_path.split("/")[:-1]) + os.path.sep
+    os.makedirs(os.path.dirname(dir_path), exist_ok=True)
 
     new_lines = []
     with open(file_path, "r+") as file:
@@ -33,6 +35,8 @@ def write_key_to_file(key, name, file_path=".env", override: bool = True) -> Non
 def read_key_from_file(name, file_path) -> str | None:
     base_dir = os.getcwd()
     file_path = os.path.join(base_dir, file_path)
+    if not os.path.exists(file_path):
+        return None
 
     with open(file_path, "r+") as file:
         lines = file.readlines()

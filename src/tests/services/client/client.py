@@ -14,8 +14,8 @@ def sample_mcp_client():
     # Es necesario tener un servidor OAuth corriendo en la direccion http://localhost:9000
     oauth_client: OAuthClient = OAuthClient(
         client_name="sample_client",
-        authorized_username="user",
-        authorized_username_password="password",
+        authorized_username="demo_user",
+        authorized_username_password="demo_password",
     )
 
     async def open_session():

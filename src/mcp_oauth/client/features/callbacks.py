@@ -4,6 +4,7 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 import requests
+import urllib.parse
 
 
 class CallbackHandler(BaseHTTPRequestHandler):
@@ -158,46 +159,31 @@ class CallbackFunctions:
         if (
             not authorization_url.startswith("https")
             and not authorization_url.startswith("http://localhost")
-            and not authorization_url.startswith("https//127.0.0.1")
-            and not authorization_url.startswith("https//0.0.0.0")
+            and not authorization_url.startswith("http//127.0.0.1")
+            and not authorization_url.startswith("http//0.0.0.0")
             and self.sequre_site
         ):
             raise Exception("No sequre site")
 
         if self.username is not None and self.password is not None:
-            data = {"username": self.username, "password": self.password}
-            uri_params = get_params_from_uri(authorization_url)
-            data = data | uri_params
-            # authorization_url = authorization_url.split("?")[0]
-            requests.post(authorization_url, data=data, json=data)
-            pass
+            payload = {
+                "username": self.username,
+                "password": self.password,
+            } | get_params_from_uri(authorization_url)
+            authorization_url = authorization_url.split("?")[0]
+
+            response = requests.post(
+                authorization_url, data=payload, allow_redirects=False
+            )
+            if response.status_code in (301, 302, 303, 307, 308):
+                redirect_url = response.headers["Location"]
+                requests.post(redirect_url, data=payload)
         else:
             webbrowser.open(authorization_url)
 
 
-def get_params_from_uri(uri: str):
-    params: dict[str, str] = {}
-
-    current_param: dict[str, str] = {"name": "", "value": ""}
-    started = False
-    on_name = True
-    for char in uri:
-        if char == "?":
-            started = True
-            continue
-        if char == "=":
-            on_name = False
-            continue
-        if char == "&":
-            params[current_param["name"]] = current_param["value"]
-            current_param = {"name": "", "value": ""}
-            on_name = True
-            continue
-
-        if started:
-            if on_name:
-                current_param["name"] += char
-            else:
-                current_param["value"] += char
-
+def get_params_from_uri(url: str):
+    parsed_url = urllib.parse.urlparse(url)
+    query = parsed_url.query
+    params = urllib.parse.parse_qs(query)
     return params

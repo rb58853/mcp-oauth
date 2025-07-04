@@ -15,7 +15,7 @@ class FileTokenStorage(TokenStorage):
     def __init__(self, server_name: str):
         self.server_name: str = server_name
         self.data: dict[str, dict[str, str]] = {}
-        # self.__load_data()
+        self.__load_data()
 
         self._tokens: OAuthToken | None = None
         self._client_info: OAuthClientInformationFull | None = None
@@ -73,6 +73,11 @@ class FileTokenStorage(TokenStorage):
 
         with open(data_path, "w") as file:
             json.dump(self.data, file)
+
+    def delete_current_server_credentials_data(self):
+        if self.data.keys().__contains__(self.server_name):
+            del self.data[self.server_name]
+            self.__save_data()
 
 
 CRIPTOGRAFY_KEY = os.getenv("CRIPTOGRAFY_KEY")

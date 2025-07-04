@@ -20,6 +20,14 @@ class ExtraFunctions:
         )
 
     def append_functions(self, routes: list[Route]) -> None:
+        # Add login route (GET/POST)
+        async def login(request: Request) -> Response:
+            if request.method == "GET":
+                return await login_page_handler(request=request)
+            if request.method == "POST":
+                return await login_callback_handler(request=request)
+            return JSONResponse({"active": False}, status_code=405)
+
         # Add login page route (GET)
         async def login_page_handler(request: Request) -> Response:
             """Show login form."""
@@ -62,7 +70,19 @@ class ExtraFunctions:
 
         # Add Functions to Routes
         routes.append(
-            Route("/login/page", endpoint=login_page_handler, methods=["GET"])
+            Route(
+                "/login",
+                endpoint=login,
+                methods=["GET", "POST"],
+            )
+        )
+
+        routes.append(
+            Route(
+                "/login/page",
+                endpoint=login_page_handler,
+                methods=["GET"],
+            )
         )
         routes.append(
             Route(

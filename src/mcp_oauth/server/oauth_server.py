@@ -38,7 +38,7 @@ class AuthServerSettings(BaseModel):
     host: str = "localhost"
     port: int = 9000
     server_url: AnyHttpUrl = AnyHttpUrl("http://localhost:9000")
-    auth_callback_path: str = "http://localhost:9000/login/callback"
+    auth_callback_path: str = "http://localhost:9000/login"
     # auth_callback_path: str = "http://localhost:9000/login/callback"
 
 

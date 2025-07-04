@@ -20,16 +20,16 @@ class OAuthClient:
     ):
         self.client_name: str = client_name
         self.redirect_uri_port: int = redirect_uri_port
-        # self.redirect_uris: list[str] = [
-        #     f"http://localhost:{redirect_uri_port}/callback"
-        # ]
         self.redirect_uris = redirect_uris
-        self.server_url: str = server_url
         self.authorized_username: str = authorized_username
         self.authorized_username_password: str = authorized_username_password
-
+        
+        self.server_url: str = server_url
+        self.token_storage = FileTokenStorage(server_name=self.server_url)
+        
         self.__oauth: OAuthClientProvider | None = None
         """private class variable"""
+        
 
     @property
     def oauth(self) -> OAuthClientProvider:
@@ -55,7 +55,8 @@ class OAuthClient:
                 client_metadata=OAuthClientMetadata.model_validate(
                     client_metadata_dict
                 ),
-                storage=FileTokenStorage(server_name=self.server_url),
+                # storage=FileTokenStorage(server_name=self.server_url),
+                storage=self.token_storage,
                 redirect_handler=callback_functions._default_redirect_handler,
                 callback_handler=callback_functions.callback_handler,
             )
@@ -63,15 +64,6 @@ class OAuthClient:
         except:
             return None
 
-    def register(self):
-        async def register_awaited():
-            client_metadata: OAuthClientMetadata = OAuthClientMetadata(
-                redirect_uris=self.redirect_uris, client_name=self.client_name
-            )
-            resp = await self.oauth._register_oauth_client(
-                server_url=self.server_url,
-                client_metadata=client_metadata,
-            )
-            return resp
-
-        return asyncio.run(register_awaited())
+    def delete_server_credentials_data(self):
+        """Delete credentials (token and client_info) from the current_server"""
+        self.token_storage.delete_current_server_credentials_data()

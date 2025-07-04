@@ -124,9 +124,6 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         password = form.get("password")
         state = form.get("state")
 
-        username = "demo_user"
-        password = "demo_password"
-
         if not username or not password or not state:
             raise HTTPException(400, "Missing username, password, or state parameter")
 

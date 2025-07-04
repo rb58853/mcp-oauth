@@ -1,4 +1,3 @@
-import asyncio
 from mcp.client.auth import OAuthClientProvider
 from mcp.shared.auth import OAuthClientMetadata
 from .features.token_storage import FileTokenStorage
@@ -12,9 +11,9 @@ class OAuthClient:
     def __init__(
         self,
         client_name: str,
-        authorized_username: str,
-        authorized_username_password: str,
-        server_url: str = "http://localhost:9000",
+        server_url: str,
+        authorized_username: str = None,
+        authorized_username_password: str = None,
         redirect_uris: list[str] = ["http://localhost:3030/callback"],
         redirect_uri_port=3030,
     ):
@@ -23,13 +22,12 @@ class OAuthClient:
         self.redirect_uris = redirect_uris
         self.authorized_username: str = authorized_username
         self.authorized_username_password: str = authorized_username_password
-        
+
         self.server_url: str = server_url
         self.token_storage = FileTokenStorage(server_name=self.server_url)
-        
+
         self.__oauth: OAuthClientProvider | None = None
         """private class variable"""
-        
 
     @property
     def oauth(self) -> OAuthClientProvider:

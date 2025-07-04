@@ -175,6 +175,8 @@ class CallbackFunctions:
             response = requests.post(
                 authorization_url, data=payload, allow_redirects=False
             )
+
+            # Esto es para usar el form del post, ya que en la redireccion se pierden datos de credenciales y no se pude tocar el codigo fuente
             if response.status_code in (301, 302, 303, 307, 308):
                 redirect_url = response.headers["Location"]
                 requests.post(redirect_url, data=payload)

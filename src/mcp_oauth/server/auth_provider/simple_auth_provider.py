@@ -35,6 +35,7 @@ from mcp.server.auth.provider import (
     construct_redirect_uri,
 )
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
+from .html_page import get_html_code
 
 logger = logging.getLogger(__name__)
 
@@ -272,38 +273,5 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
             raise HTTPException(400, "Missing state parameter")
 
         # Create simple login form HTML
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>MCP Demo Authentication</title>
-            <style>
-                body {{ font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; }}
-                .form-group {{ margin-bottom: 15px; }}
-                input {{ width: 100%; padding: 8px; margin-top: 5px; }}
-                button {{ background-color: #4CAF50; color: white; padding: 10px 15px; border: none; cursor: pointer; }}
-            </style>
-        </head>
-        <body>
-            <h2>MCP Demo Authentication</h2>
-            <p>This is a simplified authentication demo. Use the demo credentials below:</p>
-            <p><strong>Username:</strong> demo_user<br>
-            <strong>Password:</strong> demo_password</p>
-            
-            <form action="{self.server_url.rstrip('/')}/login/callback" method="post">
-                <input type="hidden" name="state" value="{state}">
-                <div class="form-group">
-                    <label>Username:</label>
-                    <input type="text" name="username" value="demo_user" required>
-                </div>
-                <div class="form-group">
-                    <label>Password:</label>
-                    <input type="password" name="password" value="demo_password" required>
-                </div>
-                <button type="submit">Sign In</button>
-            </form>
-        </body>
-        </html>
-        """
-
+        html_content = get_html_code(server_url=self.server_url, state=state)
         return HTMLResponse(content=html_content)

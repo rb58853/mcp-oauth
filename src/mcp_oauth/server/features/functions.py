@@ -47,7 +47,7 @@ class ExtraFunctions:
             # Look up token in provider
             access_token = await self.oauth_provider.load_access_token(token)
             if not access_token:
-                return JSONResponse({"active": False})
+                return JSONResponse({"active": False}, status_code=401)
             return JSONResponse(
                 {
                     "active": True,
@@ -61,13 +61,14 @@ class ExtraFunctions:
             )
 
         # Add Functions to Routes
-        routes.append(Route("/login", endpoint=login_page_handler, methods=["GET"]))
+        routes.append(
+            Route("/login/page", endpoint=login_page_handler, methods=["GET"])
+        )
         routes.append(
             Route(
                 "/login/callback",
                 endpoint=login_callback_handler,
-                methods=["POST","GET"],
-                # methods=["POST"],
+                methods=["POST"],
             )
         )
         routes.append(

@@ -39,6 +39,7 @@ class AuthServerSettings(BaseModel):
     port: int = 9000
     server_url: AnyHttpUrl = AnyHttpUrl("http://localhost:9000")
     auth_callback_path: str = "http://localhost:9000/login/callback"
+    # auth_callback_path: str = "http://localhost:9000/login/callback"
 
 
 class SimpleAuthProvider(SimpleOAuthProvider):
@@ -102,7 +103,6 @@ class OAuthServer:
                 revocation_options=mcp_auth_settings.revocation_options,
             )
 
-           
             # # Append extra functions to routes
             ExtraFunctions(oauth_provider=self.oauth_provider).append_functions(
                 routes=routes

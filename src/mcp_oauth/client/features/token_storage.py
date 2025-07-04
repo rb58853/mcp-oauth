@@ -15,7 +15,7 @@ class FileTokenStorage(TokenStorage):
     def __init__(self, server_name: str):
         self.server_name: str = server_name
         self.data: dict[str, dict[str, str]] = {}
-        self.__load_data()
+        # self.__load_data()
 
         self._tokens: OAuthToken | None = None
         self._client_info: OAuthClientInformationFull | None = None

@@ -9,9 +9,12 @@ import requests
 class CallbackHandler(BaseHTTPRequestHandler):
     """Simple HTTP handler to capture OAuth callback."""
 
-    def __init__(self, request, client_address, server, callback_data):
+    def __init__(
+        self, request, client_address, server, callback_data, timeout: int = 300
+    ):
         """Initialize with callback data storage."""
         self.callback_data = callback_data
+        self.timeout: int = 300
         super().__init__(request, client_address, server)
 
     def do_GET(self):
@@ -119,14 +122,22 @@ class CallbackServer:
 
 
 class CallbackFunctions:
-    def __init__(self, username: str, password: str, port: int = 3030):
-        self.port = port
-        self.username = username
-        self.password = password
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        port: int = 3030,
+        sequre_site: bool = True,
+        timeout: int = 300,
+    ):
+        self.port: int = port
+        self.username: str = username
+        self.password: str = password
+        self.sequre_site: bool = sequre_site
+        self.time_out: int = timeout
 
         # Now start callback server only firts time
-        self.callback_server = CallbackServer(port=self.port)
-        # self.callback_server.start()
+        self.callback_server: CallbackServer = CallbackServer(port=self.port)
 
     async def callback_handler(self) -> tuple[str, str | None]:
         callback_server = self.callback_server
@@ -144,4 +155,49 @@ class CallbackFunctions:
     async def _default_redirect_handler(self, authorization_url: str) -> None:
         """Default redirect handler that GET the URL from requests."""
         self.callback_server.start()
-        response = requests.get(authorization_url)
+        if (
+            not authorization_url.startswith("https")
+            and not authorization_url.startswith("http://localhost")
+            and not authorization_url.startswith("https//127.0.0.1")
+            and not authorization_url.startswith("https//0.0.0.0")
+            and self.sequre_site
+        ):
+            raise Exception("No sequre site")
+
+        if self.username is not None and self.password is not None:
+            data = {"username": self.username, "password": self.password}
+            uri_params = get_params_from_uri(authorization_url)
+            data = data | uri_params
+            # authorization_url = authorization_url.split("?")[0]
+            requests.post(authorization_url, data=data, json=data)
+            pass
+        else:
+            webbrowser.open(authorization_url)
+
+
+def get_params_from_uri(uri: str):
+    params: dict[str, str] = {}
+
+    current_param: dict[str, str] = {"name": "", "value": ""}
+    started = False
+    on_name = True
+    for char in uri:
+        if char == "?":
+            started = True
+            continue
+        if char == "=":
+            on_name = False
+            continue
+        if char == "&":
+            params[current_param["name"]] = current_param["value"]
+            current_param = {"name": "", "value": ""}
+            on_name = True
+            continue
+
+        if started:
+            if on_name:
+                current_param["name"] += char
+            else:
+                current_param["value"] += char
+
+    return params

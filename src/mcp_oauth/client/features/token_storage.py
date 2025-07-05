@@ -31,6 +31,7 @@ class FileTokenStorage(TokenStorage):
                 )
 
     async def get_tokens(self) -> OAuthToken | None:
+        """This funtion is called by `def initialize()` from [`OAuthClientProvider`](src/mcp_oauth/client/client_provider/client_provider.py)"""
         return self._tokens
 
     async def set_tokens(self, tokens: OAuthToken) -> None:
@@ -46,6 +47,7 @@ class FileTokenStorage(TokenStorage):
         pass
 
     async def get_client_info(self) -> OAuthClientInformationFull | None:
+        """This funtion is called by `def initialize()` from [`OAuthClientProvider`](src/mcp_oauth/client/client_provider/client_provider.py)"""
         return self._client_info
 
     async def set_client_info(self, client_info: OAuthClientInformationFull) -> None:
@@ -80,7 +82,7 @@ class FileTokenStorage(TokenStorage):
             del self.data[self.server_name]
             self._tokens = None
             self._client_info = None
-            self.__save_data()
+            # self.__save_data()
 
 
 CRIPTOGRAFY_KEY = os.getenv("CRIPTOGRAFY_KEY")

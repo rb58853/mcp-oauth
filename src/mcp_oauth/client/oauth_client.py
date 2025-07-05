@@ -26,7 +26,7 @@ class OAuthClient:
         self.server_url: str = server_url
         self.token_storage = FileTokenStorage(server_name=self.server_url)
 
-        self.__oauth: SimpleOAuthClientProvider | None = None
+        self.__oauth: Simple | None = None
         """private class variable"""
 
     @property

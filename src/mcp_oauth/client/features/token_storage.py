@@ -75,8 +75,11 @@ class FileTokenStorage(TokenStorage):
             json.dump(self.data, file)
 
     def delete_current_server_credentials_data(self):
+        """Empty and delete data from current connected server"""
         if self.data.keys().__contains__(self.server_name):
             del self.data[self.server_name]
+            self._tokens = None
+            self._client_info = None
             self.__save_data()
 
 

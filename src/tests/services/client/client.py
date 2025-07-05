@@ -16,8 +16,8 @@ def sample_mcp_client():
     oauth_client: OAuthClient = OAuthClient(
         client_name="sample_client",
         server_url=oauth_server_url,
-        # authorized_username="demo_user",
-        # authorized_username_password="demo_password",
+        authorized_username="user",
+        authorized_username_password="password",
     )
 
     async def open_session():

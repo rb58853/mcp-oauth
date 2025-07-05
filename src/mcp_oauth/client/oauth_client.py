@@ -1,4 +1,4 @@
-from mcp.client.auth import OAuthClientProvider
+from .client_provider.client_provider import SimpleOAuthClientProvider, OAuthClientProvider
 from mcp.shared.auth import OAuthClientMetadata
 from .features.token_storage import FileTokenStorage
 from .features.callbacks import CallbackFunctions
@@ -26,7 +26,7 @@ class OAuthClient:
         self.server_url: str = server_url
         self.token_storage = FileTokenStorage(server_name=self.server_url)
 
-        self.__oauth: OAuthClientProvider | None = None
+        self.__oauth: SimpleOAuthClientProvider | None = None
         """private class variable"""
 
     @property
@@ -48,7 +48,7 @@ class OAuthClient:
                 "token_endpoint_auth_method": "client_secret_post",
             }
 
-            self.__oauth = OAuthClientProvider(
+            self.__oauth = SimpleOAuthClientProvider(
                 server_url=self.server_url.replace("/mcp", ""),
                 client_metadata=OAuthClientMetadata.model_validate(
                     client_metadata_dict

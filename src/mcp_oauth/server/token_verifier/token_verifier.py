@@ -1,6 +1,7 @@
 """Example token verifier implementation using OAuth 2.0 Token Introspection (RFC 7662)."""
 
 import logging
+import httpx
 
 from mcp.server.auth.provider import AccessToken, TokenVerifier
 from mcp.shared.auth_utils import check_resource_allowed, resource_url_from_server_url
@@ -32,7 +33,6 @@ class IntrospectionTokenVerifier(TokenVerifier):
 
     async def verify_token(self, token: str) -> AccessToken | None:
         """Verify token via introspection endpoint."""
-        import httpx
 
         # Validate URL to prevent SSRF attacks
         if not self.introspection_endpoint.startswith(

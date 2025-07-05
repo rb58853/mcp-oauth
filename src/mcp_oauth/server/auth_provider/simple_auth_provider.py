@@ -8,10 +8,8 @@ NOTE: this is a simplified example for demonstration purposes.
 This is not a production-ready implementation.
 
 TODO:
-- Create a database for clients with, for example, MongoDB
+- Create a database for clients with and users, MongoDB
 - Also create a Database and interaction for authorized user by a superuser that create its.
-
-
 
 """
 
@@ -36,6 +34,7 @@ from mcp.server.auth.provider import (
 )
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
 from .html_page import get_html_code
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +44,9 @@ class SimpleAuthSettings(BaseSettings):
 
     model_config = SettingsConfigDict(env_prefix="MCP_")
 
-    # Demo user credentials
-    demo_username: str = "demo_user"
-    demo_password: str = "demo_password"
+    # Superuser credentials
+    superusername: str = os.getenv("SUPERUSERNAME")
+    superuserpassword: str = os.getenv("SUPERUSERPASSWORD")
 
     # MCP OAuth scope
     mcp_scope: str = "user"
@@ -78,8 +77,10 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         self.tokens: dict[str, AccessToken] = {}
         self.state_mapping: dict[str, dict[str, str | None]] = {}
         self.expired_at: int = expired_at
-        self.authotized_users: dict[str, str] = {"demo_user": "demo_password"}
-        """autorized users"""
+        self.authorized_users: dict[str, str] = {
+            settings.superusername: settings.superuserpassword
+        }
+        """autorized users. Using superuser credentials for the moment"""
 
         # Store authenticated user information
         self.user_data: dict[str, dict[str, Any]] = {}
@@ -160,10 +161,10 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         assert code_challenge is not None
         assert client_id is not None
 
-        # Validate demo credentials
+        # Validate user credentials
         if (
-            username != self.settings.demo_username
-            or password != self.settings.demo_password
+            not self.authorized_users.keys().__contains__(username)
+            or self.authorized_users.get(username) != password
         ):
             raise HTTPException(401, "Invalid credentials")
 
@@ -217,9 +218,13 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         )
 
         # Store user data mapping for this token
+        # self.user_data[mcp_token] = {
+        #     "username": self.settings.demo_username,
+        #     "user_id": f"user_{secrets.token_hex(8)}",
+        #     "authenticated_at": time.time(),
+        # }
         self.user_data[mcp_token] = {
-            "username": self.settings.demo_username,
-            "user_id": f"user_{secrets.token_hex(8)}",
+            "client_id": client.client_id,
             "authenticated_at": time.time(),
         }
 
@@ -275,3 +280,7 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
         # Create simple login form HTML
         html_content = get_html_code(server_url=self.server_url, state=state)
         return HTMLResponse(content=html_content)
+
+    async def append_authorized_user(self, username: str, password: str):
+        """Append new user as authorized to use the OAuth service"""
+        self.authorized_users[username] = password

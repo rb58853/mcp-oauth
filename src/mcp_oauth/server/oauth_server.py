@@ -61,6 +61,8 @@ class SimpleAuthProvider(SimpleOAuthProvider):
 
 
 class OAuthServer:
+    """ """
+
     def __init__(
         self,
         auth_settings: SimpleAuthSettings = SimpleAuthSettings(),
@@ -103,7 +105,7 @@ class OAuthServer:
                 revocation_options=mcp_auth_settings.revocation_options,
             )
 
-            # # Append extra functions to routes
+            # Append extra functions to routes
             ExtraFunctions(oauth_provider=self.oauth_provider).append_functions(
                 routes=routes
             )

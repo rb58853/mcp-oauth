@@ -35,16 +35,6 @@ class SimpleOAuthClientProvider(OAuthClientProvider):
         self.storage: FileTokenStorage = storage
         """`FileTokenStorage` reference for use class methods"""
 
-    async def _register_client(self) -> httpx.Request | None:
-        response = await super()._register_client()
-        return response  # <Request('POST', 'http://localhost:9000/register')>
-
-    async def _handle_registration_response(self, response: httpx.Response) -> None:
-        response = await super()._handle_registration_response(
-            response=response
-        )  # Aqui se hace crea el client_info del usuario
-        return response
-
     async def _perform_authorization(self) -> tuple[str, str]:
         response = await super()._perform_authorization()
         return response

@@ -9,7 +9,7 @@ dist/*
 src/mcp_oauth.egg-info/*
 
 #Text Editor
-.vscode/*
+# .vscode/*
 
 #Dev Test
 test.py

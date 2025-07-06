@@ -1,6 +1,6 @@
 from .services.client.client import sample_mcp_client
 from .services.server.server import sample_fastapi_mcp_server
-from ..mcp_oauth.server.oauth_server import OAuthServer
+from server.oauth_server import OAuthServer
 
 
 def run_client():

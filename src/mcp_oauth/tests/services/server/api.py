@@ -5,7 +5,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.auth.settings import AuthSettings
 from pydantic import AnyHttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from ....mcp_oauth.server.token_verifier.token_verifier import (
+from server.token_verifier.token_verifier import (
     IntrospectionTokenVerifier,
 )
 
@@ -23,7 +23,6 @@ class ServerSettings(BaseSettings):
     # Authorization Server settings
     auth_server_url: AnyHttpUrl = AnyHttpUrl("http://localhost:9000")
     auth_server_introspection_endpoint: str = "http://localhost:9000/introspect"
-    # No user endpoint needed - we get user data from token introspection
 
     # MCP settings
     mcp_scope: str = "user"

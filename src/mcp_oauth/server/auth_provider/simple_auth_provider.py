@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 
 class SimpleAuthSettings(BaseSettings):
-    """Simple OAuth settings for demo purposes."""
+    """Simple OAuth settings for server provider."""
 
     model_config = SettingsConfigDict(env_prefix="MCP_")
 

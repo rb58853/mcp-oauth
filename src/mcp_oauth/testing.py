@@ -1,5 +1,6 @@
+
 import click
-from src.tests.run import run_server, run_client, run_oauth
+from tests.run import run_server, run_client, run_oauth
 
 
 @click.command()

@@ -1,4 +1,4 @@
-from ....mcp_oauth.server.oauth_server import OAuthServer
+from server.oauth_server import OAuthServer
 from uvicorn import Config, Server
 from .api import app, server_settings
 import asyncio

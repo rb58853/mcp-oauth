@@ -37,6 +37,18 @@ pip install mcp-oauth
 
 ## Usage Example
 
+### Server
+
+Create a oauth server and integrate with FasMCP server.
+
+```python
+from mcp_oauth.server.oauth_server import OAuthServer
+
+def run_oauth_server():
+    oauth_server: OAuthServer = OAuthServer()
+    oauth_server.run_starlette_server()
+```
+
 ## Developer Documentation
 
 La documentacion para desarrolladores pretende exponer las funcionaldades y flujo del proyecto, de tal manera que se entendible a la perfeccion por desarrolladores externos que deseen actualizar su propio codigo sobre la base de este repositorio. Actualmente la documentacion para devs esta bajo proceso de escritura y no perfectamente util. Si esta interesado, revise esta documentacion [aqui](./doc/development.md).

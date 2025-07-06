@@ -1,4 +1,7 @@
-from .client_provider.client_provider import SimpleOAuthClientProvider, OAuthClientProvider
+from .client_provider.client_provider import (
+    SimpleOAuthClientProvider,
+    OAuthClientProvider,
+)
 from mcp.shared.auth import OAuthClientMetadata
 from .features.token_storage import FileTokenStorage
 from .features.callbacks import CallbackFunctions
@@ -26,7 +29,7 @@ class OAuthClient:
         self.server_url: str = server_url
         self.token_storage = FileTokenStorage(server_name=self.server_url)
 
-        self.__oauth: Simple | None = None
+        self.__oauth: SimpleOAuthClientProvider | None = None
         """private class variable"""
 
     @property

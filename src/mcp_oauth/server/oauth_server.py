@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 class AuthServerSettings(BaseModel):
-    """Settings for the Authorization Server."""
+    """Settings for the Authorization Server hosting."""
 
     # Server settings
     host: str = "localhost"

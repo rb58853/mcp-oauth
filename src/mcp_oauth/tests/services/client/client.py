@@ -1,6 +1,6 @@
 from mcp.client.session import ClientSession
 from mcp.shared.exceptions import McpError
-from ....mcp_oauth.client.oauth_client import OAuthClient
+from client.oauth_client import OAuthClient
 
 import asyncio
 from datetime import timedelta

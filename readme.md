@@ -51,7 +51,7 @@ An OAuth server integrated with the FastMCP server is created. The following cod
 
 ```python
 import os
-from mcp_oauth.server.oauth_server import (
+from mcp_oauth import (
     OAuthServer,
     SimpleAuthSettings,
     AuthServerSettings,
@@ -84,7 +84,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.auth.settings import AuthSettings
 from pydantic import AnyHttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from mcp_oauth.server.token_verifier.token_verifier import IntrospectionTokenVerifier
+from mcp_oauth import IntrospectionTokenVerifier
 
 class ServerSettings(BaseSettings):
     """Configuration for the MCP Server."""
@@ -145,7 +145,7 @@ This client is designed to facilitate the internal process. It is only necessary
 
 ```python
 from mcp.client.session import ClientSession
-from mcp_oauth.client.oauth_client import OAuthClient
+from mcp_oauth import OAuthClient
 import asyncio
 from datetime import timedelta
 from mcp.client.streamable_http import streamablehttp_client

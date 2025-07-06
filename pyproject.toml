@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "mcp-oauth"
 version = "0.0.1"
 authors = [{ name = "Raúl Beltrán Gómez", email = "rb58853@gmail.com" }]
-description = "OAuth2.1 server and client for mcp[cli]"
+description = 'Simple OAuth system integrated with "mcp[cli]"'
 readme = "readme.md"
 requires-python = ">=3.11"
 classifiers = [

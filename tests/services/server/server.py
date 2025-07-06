@@ -1,4 +1,4 @@
-from mcp_oauth.server.oauth_server import (
+from mcp_oauth import (
     OAuthServer,
     SimpleAuthSettings,
     AuthServerSettings,

@@ -5,9 +5,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.auth.settings import AuthSettings
 from pydantic import AnyHttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from mcp_oauth.server.token_verifier.token_verifier import (
-    IntrospectionTokenVerifier,
-)
+from mcp_oauth import IntrospectionTokenVerifier
 
 
 class ServerSettings(BaseSettings):

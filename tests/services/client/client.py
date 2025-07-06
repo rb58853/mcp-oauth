@@ -1,5 +1,5 @@
 from mcp.client.session import ClientSession
-from mcp_oauth.client.oauth_client import OAuthClient
+from mcp_oauth import OAuthClient
 import asyncio
 from datetime import timedelta
 from mcp.client.streamable_http import streamablehttp_client

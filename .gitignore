@@ -6,7 +6,7 @@
 
 #Publish files
 dist/*
-src/mcp_provider.egg-info/*
+src/mcp_oauth.egg-info/*
 
 #Text Editor
 .vscode/*

@@ -1,118 +1,104 @@
-# OAuth Client
+# Client
 
 ## MCP Client
 
-El MCP Client se encarga de gestionar las operaciones del cliente dentro del ecosistema MCP. En este caso de uso particular, el MCP Client se conecta con el OAuth Client para solicitar acceso a los recursos protegidos. Es responsable de iniciar el flujo de autenticación OAuth.
+The MCP Client is responsible for managing client operations within the MCP ecosystem. In this particular use case, the MCP Client connects with the OAuth Client to request access to protected resources. It is responsible for initiating the OAuth authentication flow.
 
 ## OAuth Client
 
-El OAuth Client es la entidad que solicita acceso a los recursos protegidos en nombre de un usuario o de sí mismo. Este componente implementa los flujos de autenticación necesarios para obtener los tokens de acceso desde el OAuth Server. Sus principales funciones incluyen:
+The OAuth Client is the entity that requests access to protected resources on behalf of a user or itself. This component implements the necessary authentication flows to obtain access tokens from the OAuth Server. Its main functions include:
 
-- Redirección del usuario al servidor de autorización.
-- Manejo de los códigos de autorización y tokens recibidos.
-- Almacenamiento seguro de los tokens.
-- Renovación automática de tokens mediante el flujo de refresh token.
+- Redirecting the user to the authorization server.
+- Handling authorization codes and tokens received.
+- Secure storage of tokens.
+- Automatic token renewal using the refresh token flow.
 
-El OAuth Client está diseñado para ser fácilmente integrable en aplicaciones externas que requieran autenticación federada.
+The OAuth Client is designed to be easily integrated into external applications requiring federated authentication.
 
 ## OAuth Client Provider
 
-El OAuth Client Provider es responsable de la configuración y gestión de las credenciales del cliente OAuth. Este módulo facilita la administración de los identificadores de cliente (`client_id`), secretos (`client_secret`), y las URLs de redirección autorizadas. Además, implementa mecanismos para la rotación de credenciales y la gestión segura de la información sensible asociada a cada cliente registrado.
+The OAuth Client Provider is responsible for the configuration and management of OAuth client credentials. This module facilitates the administration of client identifiers (`client_id`), secrets (`client_secret`), and authorized redirect URLs. Additionally, it implements mechanisms for credential rotation and secure management of sensitive information associated with each registered client.
 
 ## Callback Functions
 
-El componente de **Callback Functions** es fundamental para la gestión del flujo de autenticación OAuth, ya que permite capturar y procesar la respuesta del servidor de autorización tras la redirección del usuario. Este módulo implementa un servidor HTTP ligero que escucha las redirecciones OAuth y extrae los parámetros relevantes, como el código de autorización y el estado, facilitando así la integración con clientes de escritorio o scripts automatizados.
+The **Callback Functions** component is fundamental for managing the OAuth authentication flow, as it allows capturing and processing the authorization server's response after the user's redirection. This module implements a lightweight HTTP server that listens for OAuth redirects and extracts relevant parameters such as the authorization code and state, thus facilitating integration with desktop clients or automated scripts.
 
-### Objetivo
+### Objective
 
-El objetivo principal de [este componente](../src//mcp_oauth/client/features/callbacks.py) es proporcionar una infraestructura simple, segura y reutilizable para manejar callbacks OAuth en aplicaciones Python, permitiendo la automatización del flujo de autorización sin depender de frameworks web complejos.
+The main objective of [this component](../src//mcp_oauth/client/features/callbacks.py) is to provide a simple, secure, and reusable infrastructure to handle OAuth callbacks in Python applications, enabling automation of the authorization flow without relying on complex web frameworks.
 
-### Componentes Principales
+### Main Components
 
 #### 1. CallbackHandler
 
-`CallbackHandler` es una subclase de `BaseHTTPRequestHandler` que implementa la lógica para recibir y procesar las solicitudes GET enviadas al endpoint de callback. Sus responsabilidades incluyen:
+`CallbackHandler` is a subclass of `BaseHTTPRequestHandler` that implements the logic to receive and process GET requests sent to the callback endpoint. Its responsibilities include:
 
-- **Procesamiento de la redirección OAuth:** Captura los parámetros `code`, `state` y `error` enviados por el servidor OAuth tras la autenticación del usuario. Esto ocurre en el metodo `do_GET()`, se hace una redireccion al servidor callback, y en el momento que se hace una peticion get se llama al metodo `do_GET()`, la peticion de este se delega al cliente, usando la `redirect_uri` que apunta a este servidor callback.
+- **OAuth redirection processing:** Captures the `code`, `state`, and `error` parameters sent by the OAuth server after user authentication. This occurs in the `do_GET()` method; when a GET request is made to the callback server, the `do_GET()` method is called, and the request is delegated to the client using the `redirect_uri` pointing to this callback server.
 
-- **Gestion de datos:** Guarda los datos relevantes en un diccionario compartido para su posterior recuperación por el cliente. Desde el metodo `do_GET()`
+- **Data management:** Saves relevant data in a shared dictionary for later retrieval by the client, from within the `do_GET()` method.
 
 #### 2. CallbackServer
 
-`CallbackServer` encapsula la lógica de inicialización, ejecución y parada de un servidor HTTP local que utiliza el `CallbackHandler`. Sus principales características son:
+`CallbackServer` encapsulates the logic for initializing, running, and stopping a local HTTP server that uses the `CallbackHandler`. Its main features include:
 
-- **Ejecución en segundo plano:** Inicia el servidor en un hilo separado, permitiendo que la aplicación principal continúe su ejecución.
-- **Gestión de ciclo de vida:** Proporciona métodos para iniciar (`start`), detener (`stop`) y esperar la llegada de la callback (`wait_for_callback`) con manejo de timeout.
-- **Almacenamiento seguro:** Mantiene de forma interna el código de autorización, el estado y posibles errores para su consulta posterior.
-<!-- - **Configuración flexible:** Permite especificar el puerto de escucha y el tiempo máximo de espera. -->
+- **Background execution:** Starts the server in a separate thread, allowing the main application to continue running.
+- **Lifecycle management:** Provides methods to start (`start`), stop (`stop`), and wait for the callback (`wait_for_callback`) with timeout handling.
+- **Secure storage:** Internally stores the authorization code, state, and possible errors for later querying.
+<!-- - **Flexible configuration:** Allows specifying the listening port and maximum wait time. -->
 
 #### 3. CallbackFunctions
 
-`CallbackFunctions` es una clase de alto nivel que orquesta el uso de `CallbackServer` y expone métodos para facilitar el flujo de autenticación OAuth. Entre sus funcionalidades se destacan:
+`CallbackFunctions` is a high-level class that orchestrates the use of `CallbackServer` and exposes methods to facilitate the OAuth authentication flow. Its functionalities include:
 
-- **Inicialización parametrizable:** Permite configurar usuario, contraseña, puerto, seguridad del sitio y tiempo de espera.
-- **Manejo del callback:** El método `callback_handler` espera la llegada del código de autorización y el estado, deteniendo el servidor una vez recibidos.
-- **Redirección automática:** El método `_default_redirect_handler` abre el navegador web o realiza una petición POST automatizada, dependiendo de la configuración y la presencia de credenciales.
-- **Validación de seguridad:** Verifica que la URL de autorización sea segura antes de proceder, especialmente en ambientes de producción.
+- **Parametrizable initialization:** Allows configuring username, password, port, site security, and timeout.
+- **Callback handling:** The `callback_handler` method waits for the authorization code and state to arrive, stopping the server once received.
+- **Automatic redirection:** The `_default_redirect_handler` method opens a web browser or performs an automated POST request depending on the configuration and presence of credentials.
+- **Security validation:** Verifies that the authorization URL is secure before proceeding, especially in production environments.
 
-#### 4. Utilidad: get_params_from_uri
+#### 4. Utility: get_params_from_uri
 
-Función auxiliar que extrae y retorna los parámetros de consulta de una URL, facilitando la manipulación y el envío de datos en el flujo de autenticación.
+Auxiliary function that extracts and returns query parameters from a URL, facilitating data manipulation and transmission during the authentication flow.
 
-### Flujo de Uso
+### Usage Flow
 
-1. **Inicio del servidor de callback:** Al iniciar el proceso de autorización, se levanta el `CallbackServer` en un puerto local.
-2. **Redirección del usuario:** El usuario es redirigido al servidor de autorización OAuth, ya sea automáticamente o mediante la apertura de un navegador.
-3. **Recepción de la respuesta:** El servidor de callback captura la redirección con los parámetros `code` y `state`.
-4. **Procesamiento y cierre:** El código de autorización es almacenado y el servidor es detenido, permitiendo que el cliente continúe el flujo de intercambio de tokens.
+1. **Start the callback server:** When starting the authorization process, the `CallbackServer` is launched on a local port.
+2. **User redirection:** The user is redirected to the OAuth authorization server, either automatically or by opening a browser.
+3. **Response reception:** The callback server captures the redirect with the `code` and `state` parameters.
+4. **Processing and shutdown:** The authorization code is stored and the server is stopped, allowing the client to continue the token exchange flow.
 
-### Ventajas y Consideraciones
+### Advantages and Considerations
 
-- **Simplicidad:** Permite manejar callbacks OAuth sin depender de frameworks externos.
-- **Automatización:** Soporta tanto flujos manuales (navegador) como automatizados (peticiones POST).
-- **Seguridad:** Incluye validaciones para evitar redirecciones a sitios no seguros.
-- **Extensibilidad:** Puede adaptarse fácilmente a distintos escenarios de autenticación OAuth.
+- **Simplicity:** Enables handling OAuth callbacks without relying on external frameworks.
+- **Automation:** Supports both manual flows (browser) and automated flows (POST requests).
+- **Security:** Includes validations to prevent redirection to insecure sites.
+- **Extensibility:** Easily adaptable to different OAuth authentication scenarios.
 
----
-
-### Ejemplo de Uso
-
-```python
-from callback_module import CallbackFunctions
-
-# Inicialización del componente
-callback = CallbackFunctions(username="usuario", password="contraseña", port=3030)
-
-# Lanzar el flujo de autenticación y esperar el callback
-authorization_code, state = await callback.callback_handler()
-```
-
-Este componente es esencial para cualquier integración OAuth en aplicaciones Python que requieran capturar la respuesta del servidor de autorización de manera local y segura, facilitando tanto el desarrollo como la automatización de pruebas y despliegues.
+This component is essential for any OAuth integration in Python applications that require capturing the authorization server's response locally and securely, facilitating both development and automation of testing and deployments.
 
 ### TokenVerifier (Server Core)
 
-El TokenVerifier es un componente central en el servidor OAuth encargado de la validación de los tokens de acceso y refresco emitidos por el sistema. Sus principales responsabilidades incluyen:
+The TokenVerifier is a central component in the OAuth server responsible for validating access and refresh tokens issued by the system. Its main responsibilities include:
 
-- Verificar la firma y validez temporal de los tokens.
-- Comprobar los permisos y alcances (`scopes`) asociados a cada token.
-- Detectar y prevenir el uso de tokens revocados o caducados.
-- Proveer respuestas detalladas en caso de errores de autenticación o autorización.
+- Verifying the signature and temporal validity of tokens.
+- Checking permissions and scopes associated with each token.
+- Detecting and preventing the use of revoked or expired tokens.
+- Providing detailed responses in case of authentication or authorization errors.
 
-El TokenVerifier es esencial para mantener la seguridad y confiabilidad del sistema de autenticación.
+The TokenVerifier is essential to maintain the security and reliability of the authentication system.
 
 ### TokenStorage (Client Core)
 
-El TokenStorage es el módulo encargado de la gestión y almacenamiento seguro de los tokens en el lado del cliente. Entre sus funcionalidades destacan:
+TokenStorage is the module responsible for managing and securely storing tokens on the client side. Its functionalities include:
 
-- Almacenamiento cifrado de tokens de acceso y refresco.
-- Manejo de la expiración y renovación automática de tokens.
-- Eliminación segura de tokens revocados o caducados.
-- Integración con sistemas de almacenamiento persistente (archivos, bases de datos, etc.).
+- Encrypted storage of access and refresh tokens.
+- Handling token expiration and automatic renewal.
+- Secure deletion of revoked or expired tokens.
+- Integration with persistent storage systems (files, databases, etc.).
 
-Este componente garantiza que los tokens estén disponibles para su uso cuando sea necesario, manteniendo altos estándares de seguridad y confidencialidad.
+This component ensures tokens are available when needed while maintaining high standards of security and confidentiality.
 
 ---
 
 ### `async_auth_flow` (OAuthClient)
 
-Este es el metodo encargado de todo el flujo de autorizacion desde la parte del cliente ([`SimpleOAuthClientProvider`](../src/mcp_oauth/client/client_provider/client_provider.py)). En este repositorio, este metodo fue sobreescrito desde e metodo original para poder controlar a gusto el flujo desde nuestro cliente sin tocar nada del codigo fuente de nuestro OAuthServer. De esta forma se logra que el Oauth server sea estandar sin cambios y el codigo del cliente posee cambios maleables pero a su vez tambien cumple con conexiones estandars.
+This method handles the entire authorization flow from the client side ([`SimpleOAuthClientProvider`](../src/mcp_oauth/client/client_provider/client_provider.py)). In this repository, this method was overridden from the original to allow custom control of the flow from our client without modifying any source code of our OAuthServer. This way, the OAuth server remains standard without changes, and the client code has flexible modifications while still complying with standard connections.

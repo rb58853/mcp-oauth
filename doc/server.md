@@ -1,21 +1,20 @@
-# OAuth Server
+# Server
 
 ## MCP Server
 
-El MCP Server es responsable de gestionar las operaciones internas del servidor MCP. En el contexto específico de este repositorio, el MCP Server actúa como intermediario entre los servicios internos y el `OAuthServer` asociado. En este contexto, su principal función es establecer y mantener una conexión segura con el servidor OAuth, solicitando y gestionando la autorización necesaria para acceder a los recursos protegidos.
+The MCP Server is responsible for managing the internal operations of the MCP server. In the specific context of this repository, the MCP Server acts as an intermediary between internal services and the associated `OAuthServer`. Its main function here is to establish and maintain a secure connection with the OAuth server, requesting and managing the authorization needed to access protected resources.
 
 ## OAuth Server
 
-El OAuth Server constituye el núcleo del proyecto. Su función principal es la de gestionar el registro, validación y administración de los clientes y usuarios que interactúan con el sistema. Entre sus responsabilidades se encuentran:
+The OAuth Server is the core of the project. Its primary function is to manage the registration, validation, and administration of clients and users interacting with the system. Its responsibilities include:
 
-- Registro y gestión de aplicaciones clientes.
-- Autenticación de usuarios y clientes.
-- Emisión, validación y revocación de tokens de acceso y refresco.
-- Almacenamiento seguro de credenciales y tokens.
-<!-- - Implementación de los distintos flujos de OAuth2 (Authorization Code, Client Credentials, etc.). -->
+- Registration and management of client applications.
+- Authentication of users and clients.
+- Issuance, validation, and revocation of access and refresh tokens.
+- Secure storage of credentials and tokens.
 
-El OAuth Server está diseñado para ser extensible y seguro, siguiendo las mejores prácticas en materia de autenticación y autorización. Actualemente se encuentra en proceso de desarrollo y solo funciona en memoria ram.
+The OAuth Server is designed to be extensible and secure, following best practices in authentication and authorization. Currently, it is under development and only operates in RAM.
 
 ## OAuth Server Provider
 
-El OAuth Server Provider es el componente encargado de implementar la lógica específica del proveedor OAuth. Este módulo define las políticas de seguridad, los métodos de autenticación soportados, y las reglas para la emisión y validación de tokens. Permite la integración con sistemas de identidad externos (LDAP, bases de datos, etc.) y facilita la personalización del comportamiento del servidor OAuth según los requerimientos del proyecto.
+The OAuth Server Provider is the component responsible for implementing the specific logic of the OAuth provider. This module defines security policies, supported authentication methods, and rules for token issuance and validation. It allows integration with external identity systems (LDAP, databases, etc.) and facilitates customization of the OAuth server behavior according to project requirements.

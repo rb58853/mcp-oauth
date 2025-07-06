@@ -18,5 +18,5 @@ license-files = ["license*"]
 dependencies = ["starlette", "uvicorn", "mcp[cli]", "python-jose"]
 
 [project.urls]
-Homepage = "https://github.com/rb58853/mcp-oauth-provider"
-Issues = "https://github.com/rb58853/mcp-oauth-provider/issues"
+Homepage = "https://github.com/rb58853/mcp-oauth"
+Issues = "https://github.com/rb58853/mcp-oauth/issues"

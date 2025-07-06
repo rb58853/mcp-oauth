@@ -137,13 +137,10 @@ class CallbackFunctions:
         self.sequre_site: bool = sequre_site
         self.time_out: int = timeout
 
-        # Now start callback server only firts time
         self.callback_server: CallbackServer = CallbackServer(port=self.port)
 
     async def callback_handler(self) -> tuple[str, str | None]:
         callback_server = self.callback_server
-        # callback_server = CallbackServer(port=self.port)
-        # callback_server.start()
 
         """Wait for OAuth callback and return auth code and state."""
         print("⏳ Waiting for authorization callback...")
@@ -155,7 +152,9 @@ class CallbackFunctions:
 
     async def _default_redirect_handler(self, authorization_url: str) -> None:
         """Default redirect handler that GET the URL from requests."""
+        # start callback server
         self.callback_server.start()
+        
         if (
             not authorization_url.startswith("https")
             and not authorization_url.startswith("http://localhost")

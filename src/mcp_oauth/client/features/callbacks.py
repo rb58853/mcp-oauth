@@ -154,12 +154,12 @@ class CallbackFunctions:
         """Default redirect handler that GET the URL from requests."""
         # start callback server
         self.callback_server.start()
-        
+
         if (
             not authorization_url.startswith("https")
             and not authorization_url.startswith("http://localhost")
-            and not authorization_url.startswith("http//127.0.0.1")
-            and not authorization_url.startswith("http//0.0.0.0")
+            and not authorization_url.startswith("http://127.0.0.1")
+            and not authorization_url.startswith("http://0.0.0.0")
             and self.sequre_site
         ):
             raise Exception("No sequre site")

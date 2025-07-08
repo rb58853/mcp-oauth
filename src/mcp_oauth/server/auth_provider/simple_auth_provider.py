@@ -10,7 +10,7 @@ This is not a production-ready implementation.
 TODO:
 - Create a database for clients with and users, MongoDB
 - Also create a Database and interaction for authorized user by a superuser that create its.
-
+- Create separate logic for differents OAuth Providers, currently the used provider is UserCredentials, and autorize page is `host/login`
 """
 
 import logging
@@ -45,8 +45,8 @@ class SimpleAuthSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="MCP_")
 
     # Superuser credentials
-    superusername: str = os.getenv("SUPERUSERNAME")
-    superuserpassword: str = os.getenv("SUPERUSERPASSWORD")
+    superusername: str | None = os.getenv("SUPERUSERNAME")
+    superuserpassword: str | None = os.getenv("SUPERUSERPASSWORD")
 
     # MCP OAuth scope
     mcp_scope: str = "user"
@@ -84,6 +84,9 @@ class SimpleOAuthProvider(OAuthAuthorizationServerProvider):
 
         # Store authenticated user information
         self.user_data: dict[str, dict[str, Any]] = {}
+
+        if settings.superusername is None or settings.superuserpassword is None:
+            logger.warning("⛔️ DANGER: user credentials are None.")
 
     async def get_client(self, client_id: str) -> OAuthClientInformationFull | None:
         """Get OAuth client information."""

@@ -200,6 +200,12 @@ The developer documentation exposes the functionalities and project flow, facili
 * Automated OAuth client with re-login on authorization failures.
 * Simple token storage in filesystem with encryption using `jose-python`.
 
+### v0.0.2
+
+* Minor lexicographical errors in secure URLs have been fixed.
+* The loadenv function was added before any loading process to ensure that local environment variables are always loaded.
+* Necessary dependencies for the package have been added.
+
 ## Project Status
 
 > ⚠️ **Important Notice:** This project is in active development. Therefore, errors or unexpected behaviors may occur during its use.

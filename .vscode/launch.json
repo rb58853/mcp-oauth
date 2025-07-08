@@ -11,6 +11,36 @@
             "program": "${file}",
         },
         {
+            "name": "Python: OAuth Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/mcp_oauth/testing.py",
+            "args": [
+                "--service",
+                "oauth"
+            ]
+        },
+        {
+            "name": "Python: MCP Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/mcp_oauth/testing.py",
+            "args": [
+                "--service",
+                "server"
+            ]
+        },
+        {
+            "name": "Python: Client",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/mcp_oauth/testing.py",
+            "args": [
+                "--service",
+                "client"
+            ]
+        },
+        {
             "name": "Python: Prod OAuth Server",
             "type": "debugpy",
             "request": "launch",

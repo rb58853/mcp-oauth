@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-oauth"
-version = "0.0.1"
+version = "0.0.2"
 authors = [{ name = "Raúl Beltrán Gómez", email = "rb58853@gmail.com" }]
 description = 'Simple OAuth system integrated with "mcp[cli]"'
 readme = "readme.md"
@@ -15,7 +15,14 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["license*"]
-dependencies = ["starlette", "uvicorn", "mcp[cli]", "python-jose"]
+dependencies = [
+  "starlette",
+  "uvicorn",
+  "mcp[cli]",
+  "python-jose",
+  "requests",
+  "dotenv",
+]
 
 [project.urls]
 Homepage = "https://github.com/rb58853/mcp-oauth"

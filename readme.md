@@ -206,6 +206,11 @@ The developer documentation exposes the functionalities and project flow, facili
 * The loadenv function was added before any loading process to ensure that local environment variables are always loaded.
 * Necessary dependencies for the package have been added.
 
+### v0.0.3
+
+* control de exepciones
+  * Criptografy key null: explica que hacer en este caso
+
 ## Project Status
 
 > ⚠️ **Important Notice:** This project is in active development. Therefore, errors or unexpected behaviors may occur during its use.

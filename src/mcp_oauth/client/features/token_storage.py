@@ -85,7 +85,15 @@ class FileTokenStorage(TokenStorage):
             # self.__save_data()
 
 
-CRIPTOGRAFY_KEY = os.getenv("CRIPTOGRAFY_KEY")
+CRIPTOGRAFY_KEY: str | None = os.getenv("CRIPTOGRAFY_KEY")
+if CRIPTOGRAFY_KEY is None:
+    raise Exception(
+        'CRIPTOGRAFY_KEY is `None`, you need add the variable named `"CRIPTOGRAFY_KEY"` to `.env` file. You can use this code \n\
+        ```\n\
+        from mcp_oauth.utils.criptografy_key import generate_criptografy_key\n\
+        generate_criptografy_key()\n\
+        ```'
+    )
 
 
 class Criptografy:

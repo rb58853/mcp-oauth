@@ -12,7 +12,6 @@ This is not a production-ready implementation.
 import asyncio
 import logging
 
-from fastapi import Request, Response
 from pydantic import AnyHttpUrl, BaseModel
 from starlette.applications import Starlette
 from starlette.routing import Route
@@ -24,9 +23,6 @@ from mcp.server.auth.provider import OAuthAuthorizationServerProvider
 
 from .auth_provider.simple_auth_provider import SimpleAuthSettings, SimpleOAuthProvider
 from .features.functions import ExtraFunctions
-
-from starlette.requests import Request
-from starlette.responses import Response
 
 logger = logging.getLogger(__name__)
 

@@ -29,6 +29,14 @@ class FileTokenStorage(TokenStorage):
                 self._client_info = Criptografy.get_clientinfo(
                     self.data[self.server_name]["ClientInfo"]
                 )
+        if CRIPTOGRAFY_KEY is None:
+            raise Exception(
+                'CRIPTOGRAFY_KEY is `None`, you need add the variable named `"CRIPTOGRAFY_KEY"` to `.env` file. You can use this code \n\
+        ```\n\
+        from mcp_oauth.utils.criptografy_key import generate_criptografy_key\n\
+        generate_criptografy_key()\n\
+        ```'
+            )
 
     async def get_tokens(self) -> OAuthToken | None:
         """This funtion is called by `def initialize()` from [`OAuthClientProvider`](src/mcp_oauth/client/client_provider/client_provider.py)"""
@@ -85,7 +93,7 @@ class FileTokenStorage(TokenStorage):
             # self.__save_data()
 
 
-CRIPTOGRAFY_KEY = os.getenv("CRIPTOGRAFY_KEY")
+CRIPTOGRAFY_KEY: str | None = os.getenv("CRIPTOGRAFY_KEY")
 
 
 class Criptografy:

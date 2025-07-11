@@ -47,7 +47,49 @@ The examples presented are based on a FastMCP with `httpstream` transfer protoco
 
 ### OAuth Server
 
-An OAuth server integrated with the FastMCP server is created. The following code starts an OAuth server at the host `http://127.0.0.1:9000`.
+#### QuickOAuthServerHost
+
+For a rapid deployment, the [`QuickOAuthServerHost`](src/mcp_oauth/server/quick_server.py) class can be utilized. This class initializes the `SimpleOAuthServerHost` with the necessary configuration for the OAuth server.
+
+**Parameters:**
+
+* `oauth_host (str)`: Specifies the host address for the OAuth server.
+* `oauth_port (int)`: Defines the port number for the OAuth server.
+* `superusername (str | None)`: Indicates the superuser username required for authentication.
+* `superuserpassword (str | None)`: Represents the superuser password required for authentication.
+
+``` python
+# oauth_server.py
+import click
+from mcp_oauth import QuickOAuthServerHost
+
+@click.command()
+@click.option("--host", default="127.0.0.1", help="")
+@click.option("--port", default=9080, help="Port to listen on")
+@click.option("--superusername", default=None, help="")
+@click.option("--superuserpassword", default=None, help="")
+def main(
+    host: str,
+    port: int,
+    superusername: str | None,
+    superuserpassword: str | None,
+):
+    simple_oauth_server_host: QuickOAuthServerHost = QuickOAuthServerHost(
+        oauth_port=port,
+        oauth_host=host,
+        superusername=superusername,
+        superuserpassword=superuserpassword,
+    )
+    simple_oauth_server_host.run_oauth_server()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+#### Manual Configuration
+
+Alternatively, a manual configuration can be applied to customize the server according to specific requirements. In this scenario, an OAuth server integrated with the FastMCP server is created. The following example demonstrates how to start an OAuth server at the address `http://127.0.0.1:9000`.
 
 ```python
 import os
@@ -208,8 +250,10 @@ The developer documentation exposes the functionalities and project flow, facili
 
 ### v0.0.3
 
-* control de exepciones
-  * Criptografy key null: explica que hacer en este caso
+* The `QuickOAuthServerHost` class has been implemented to simplify the creation of an OAuth server.
+
+* Exception handling has been incorporated:
+  * **Null cryptography key:** guidance on how to address this scenario.
 
 ## Project Status
 

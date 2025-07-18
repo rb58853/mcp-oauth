@@ -257,7 +257,7 @@ The developer documentation exposes the functionalities and project flow, facili
 
 ### v0.0.4
 
-* Ahora se detecta automaticamente el OAuth server, solo es necesario pasar el servidor MCP para detectar el servidor OAuth. Alternativamente puedes serguir pasando el servidor OAuth como parametro que sobreescribe los servidores extraidos desde el mcp_server:  
+* The OAuth server is now detected automatically. It is only necessary to provide the MCP server to identify the corresponding OAuth server. Alternatively, you can continue to specify the OAuth server as a parameter, which will override the values derived from the mcp_server.
 
     ```python
         oauth_client: OAuthClient = OAuthClient(

@@ -1,5 +1,7 @@
 from mcp.client.session import ClientSession
+from mcp.shared.exceptions import McpError
 from mcp_oauth import OAuthClient
+
 import asyncio
 from datetime import timedelta
 from mcp.client.streamable_http import streamablehttp_client
@@ -8,12 +10,11 @@ from mcp.client.streamable_http import streamablehttp_client
 def sample_mcp_client():
     # Es necesario tener un servidor MCP corriendo en la direccion http://127.0.0.1:8000//example-server/mcp por httpstream
     server_url: str = "http://127.0.0.1:8000/example-server/mcp"
-    oauth_server_url: str = "http://127.0.0.1:9000"
 
     # Es necesario tener un servidor OAuth corriendo en la direccion http://localhost:9000
     oauth_client: OAuthClient = OAuthClient(
         client_name="sample_client",
-        server_url=oauth_server_url,
+        mcp_server_url=server_url,
         authorized_username="user",
         authorized_username_password="password",
     )

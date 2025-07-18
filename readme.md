@@ -255,6 +255,18 @@ The developer documentation exposes the functionalities and project flow, facili
 * Exception handling has been incorporated:
   * **Null cryptography key:** guidance on how to address this scenario.
 
+### v0.0.4
+
+* Ahora se detecta automaticamente el OAuth server, solo es necesario pasar el servidor MCP para detectar el servidor OAuth. Alternativamente puedes serguir pasando el servidor OAuth como parametro que sobreescribe los servidores extraidos desde el mcp_server:  
+
+    ```python
+        oauth_client: OAuthClient = OAuthClient(
+        mcp_server_url=my_mcp_server_url, #required
+        oauth_server_url=my_oauth_server_url, #optional
+        ...
+        )
+    ```
+
 ## Project Status
 
 > ⚠️ **Important Notice:** This project is in active development. Therefore, errors or unexpected behaviors may occur during its use.

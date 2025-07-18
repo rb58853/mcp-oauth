@@ -7,8 +7,12 @@ from mcp.client.auth import (
     Callable,
     OAuthClientMetadata,
     MCP_PROTOCOL_VERSION,
+    LATEST_PROTOCOL_VERSION,
+    urljoin,
+    urlparse,
     logger,
 )
+
 from ..features.token_storage import FileTokenStorage
 
 
@@ -201,3 +205,64 @@ class SimpleOAuthClientProvider(OAuthClientProvider):
                         # Not end flow, again is needed repeat the proccess
                         end_flow = False
                         cicles_count += 1
+
+    async def _register_client(self) -> httpx.Request | None:
+        """Build registration request or skip if already registered."""
+        if self.context.client_info:
+            return None
+
+        if (
+            self.context.oauth_metadata
+            and self.context.oauth_metadata.registration_endpoint
+        ):
+            registration_url = str(self.context.oauth_metadata.registration_endpoint)
+        else:
+            auth_base_url = self.context.get_authorization_base_url(
+                self.context.server_url
+            )
+            registration_url = urljoin(auth_base_url, "/register")
+
+        registration_data = self.context.client_metadata.model_dump(
+            by_alias=True, mode="json", exclude_none=True
+        )
+
+        return httpx.Request(
+            "POST",
+            registration_url,
+            json=registration_data,
+            headers={"Content-Type": "application/json"},
+        )
+
+    async def _discover_oauth_metadata(self) -> httpx.Request:
+        """Build OAuth metadata discovery request with fallback support."""
+        if self.context.auth_server_url:
+            auth_server_url = self.context.auth_server_url
+        else:
+            auth_server_url = self.context.server_url
+
+        # Per RFC 8414, try path-aware discovery first
+        parsed = urlparse(auth_server_url)
+        well_known_path = self._build_well_known_path(parsed.path)
+        base_url = f"{parsed.scheme}://{parsed.netloc}"
+        url = urljoin(base_url, well_known_path)
+
+        # Store fallback info for use in response handler
+        self.context.discovery_base_url = base_url
+        self.context.discovery_pathname = parsed.path
+
+        return await self._try_metadata_discovery(url)
+
+    async def _discover_protected_resource(self) -> httpx.Request:
+        """Build discovery request for protected resource metadata."""
+        auth_base_url = self.context.server_url
+
+        end_removables: list[str] = ["/mcp", "/mcp/"]
+        for end in end_removables:
+            if auth_base_url.endswith(end):
+                auth_base_url = auth_base_url[: -len(end)]
+        
+        url = auth_base_url + "/.well-known/oauth-protected-resource"
+
+        return httpx.Request(
+            "GET", url, headers={MCP_PROTOCOL_VERSION: LATEST_PROTOCOL_VERSION}
+        )

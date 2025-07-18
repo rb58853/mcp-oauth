@@ -15,7 +15,6 @@ class OAuthClient:
         self,
         client_name: str,
         mcp_server_url: str,
-        oauth_server_url: str | None = None,
         authorized_username: str = None,
         authorized_username_password: str = None,
         redirect_uris: list[str] = ["http://localhost:3030/callback"],
@@ -26,7 +25,6 @@ class OAuthClient:
 
         :param str client_name: Name of the client.
         :param str mcp_server_url: URL of the MCP server.
-        :param str oauth_server_url: URL of the OAuth server.
         :param str authorized_username: Username for authorization.
         :param str authorized_username_password: Password for the authorized username.
         :param list[str] redirect_uris: List of redirect URIs for the OAuth flow.
@@ -39,12 +37,7 @@ class OAuthClient:
         self.authorized_username: str = authorized_username
         self.authorized_username_password: str = authorized_username_password
 
-        self.server_url: str | None = None
-        if oauth_server_url is not None:
-            self.server_url = oauth_server_url
-        else:
-            self.server_url = self.__get_oauht_from_mcp_server(mcp_server_url)
-
+        self.server_url: str = mcp_server_url
         self.token_storage = FileTokenStorage(server_name=self.server_url)
 
         self.__oauth: SimpleOAuthClientProvider | None = None
@@ -74,7 +67,6 @@ class OAuthClient:
                 client_metadata=OAuthClientMetadata.model_validate(
                     client_metadata_dict
                 ),
-                # storage=FileTokenStorage(server_name=self.server_url),
                 storage=self.token_storage,
                 redirect_handler=callback_functions._default_redirect_handler,
                 callback_handler=callback_functions.callback_handler,
@@ -87,6 +79,7 @@ class OAuthClient:
         """Delete credentials (token and client_info) from the current_server"""
         self.token_storage.delete_current_server_credentials_data()
 
+    
     def __get_oauht_from_mcp_server(self, mcp_server_url: str) -> str:
         """
         Get the OAuth server URL from the MCP server.
@@ -98,15 +91,15 @@ class OAuthClient:
 
         endpoints: list[str] = [
             ".well-known/oauth-protected-resource",
+            ".well-known/oauth-protected-resource/mcp",  # github mcp use case
             ".well-known/oauth-authorization-server",
             ".well-known/openid-configuration",
-            ".well-known/oauth-protected-resource/mcp",  # github mcp use case
         ]
-        mcp_server_url = (
-            mcp_server_url[: -len("/mcp")]
-            if mcp_server_url.endswith("/mcp")
-            else mcp_server_url
-        )
+        end_removables: list[str] = ["/mcp", "/mcp/"]
+        for end in end_removables:
+            if mcp_server_url.endswith(end):
+                mcp_server_url = mcp_server_url[: -len(end)]
+
         for endpoint in endpoints:
             response = requests.get(f"{mcp_server_url}/{endpoint}")
             if response.status_code == 200:
@@ -114,8 +107,8 @@ class OAuthClient:
                     "authorization_servers", None
                 )
                 if servers is not None:
-                    return servers[0]  # TODO: Using all oauth servers
+                    return servers[0]
 
-            raise ValueError(
-                f"Failed to retrieve OAuth server URL from MCP server, need manual oauth server url: {response.status_code}"
-            )
+        raise ValueError(
+            f"Failed to retrieve OAuth server URL from MCP server, need manual oauth server url: {response.status_code}"
+        )

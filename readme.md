@@ -177,11 +177,9 @@ def create_mcp_server(settings: ServerSettings = ServerSettings()) -> FastMCP:
 To create a client, import `OAuthClient` and provide the following arguments:
 
 * `client_name [str]`: client application name.
-* `server_url [str]`: OAuth server address (not the MCP).
+* `server_url [str]`: MCP server address (not the OAuth server).
 * `authorized_username [str]`: optionally, the authorized superuser username on the server. If credentials are provided in code, authentication will be automatic; otherwise, a login page will be shown in the browser.
 * `authorized_username_password [str]`: optionally, the authorized superuser password.
-
-> **Note:** Currently, no method has been found to delegate exposing the `OAuthServer` address from the `FastMCP` server; therefore, it is necessary to explicitly pass the OAuth server address to the client.
 
 This client is designed to facilitate the internal process. It is only necessary to configure the above and pass the associated `.oauth` property to the `streamablehttp_client`, as exemplified below:
 
@@ -198,9 +196,9 @@ def sample_mcp_client():
     oauth_server_url: str = "http://127.0.0.1:9000"
     oauth_client: OAuthClient = OAuthClient(
         client_name="sample_client",
-        server_url=oauth_server_url,
-        authorized_username="user",
-        authorized_username_password="password",
+        mcp_server_url=server_url,
+        # authorized_username="user",
+        # authorized_username_password="password",
     )
 
     async def open_session():
@@ -266,6 +264,10 @@ The developer documentation exposes the functionalities and project flow, facili
         ...
         )
     ```
+
+### v0.0.5
+
+* Ahora la deteccion del servidor oauth se hace en el flujo del cliente, normalmente esta implementado asi en el codigo fuente, pero se arreglo un problema con las path del servidor oauth para que funcione correctamente.
 
 ## Project Status
 

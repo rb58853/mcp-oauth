@@ -63,6 +63,7 @@ class OAuthClient:
             }
 
             self.__oauth = SimpleOAuthClientProvider(
+            # self.__oauth = OAuthClientProvider(
                 server_url=self.server_url.replace("/mcp", ""),
                 client_metadata=OAuthClientMetadata.model_validate(
                     client_metadata_dict

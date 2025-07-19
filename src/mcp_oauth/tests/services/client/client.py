@@ -16,7 +16,6 @@ def sample_mcp_client():
     oauth_client: OAuthClient = OAuthClient(
         client_name="sample_client",
         mcp_server_url=server_url,
-        # oauth_server_url="https://github.com/login/oauth",
         # authorized_username="user",
         # authorized_username_password="password",
     )

@@ -74,6 +74,7 @@ class CallbackServer:
         self.thread = None
         self.callback_data = {"authorization_code": None, "state": None, "error": None}
         self.is_started: bool = False
+        self.__stop_wait: bool = False
 
     def _create_handler_with_data(self):
         """Create a handler class with access to callback data."""
@@ -109,7 +110,7 @@ class CallbackServer:
     def wait_for_callback(self, timeout=300):
         """Wait for OAuth callback with timeout."""
         start_time = time.time()
-        while time.time() - start_time < timeout:
+        while time.time() - start_time < timeout and not self.stop_wait:
             if self.callback_data["authorization_code"]:
                 return self.callback_data["authorization_code"]
             elif self.callback_data["error"]:
@@ -120,6 +121,15 @@ class CallbackServer:
     def get_state(self):
         """Get the received state parameter."""
         return self.callback_data["state"]
+
+    @property
+    def stop_wait(self):
+        result = self.__stop_wait
+        self.__stop_wait = False
+        return result
+
+    def force_stop_wait(self):
+        self.__stop_wait = True
 
 
 class CallbackFunctions:
@@ -180,7 +190,11 @@ class CallbackFunctions:
                 redirect_url = response.headers["Location"]
                 requests.post(redirect_url, data=payload)
         else:
-            webbrowser.open(authorization_url)
+            response = requests.get(authorization_url)
+            if response.status_code == 200:
+                webbrowser.open(authorization_url)
+            if response.status_code == 400:
+                self.callback_server.force_stop_wait()
 
 
 def get_params_from_uri(url: str):

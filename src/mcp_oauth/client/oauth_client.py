@@ -31,7 +31,9 @@ class OAuthClient:
         self.client_name: str = client_name
         self.redirect_uri_port: int = redirect_uri_port
         self.redirect_uris = redirect_uris
-        
+
+        self.body: dict | None = body
+
         self.server_url: str = mcp_server_url
         self.token_storage = FileTokenStorage(server_name=self.server_url)
 
@@ -45,9 +47,8 @@ class OAuthClient:
 
         try:
             callback_functions: CallbackFunctions = CallbackFunctions(
-                username=self.authorized_username,
-                password=self.authorized_username_password,
                 port=self.redirect_uri_port,
+                body=self.body,
             )
             client_metadata_dict = {
                 "client_name": self.client_name,
@@ -57,8 +58,8 @@ class OAuthClient:
                 "token_endpoint_auth_method": "client_secret_post",
             }
 
-            self.__oauth = SimpleOAuthClientProvider(
-                # self.__oauth = OAuthClientProvider(
+            # self.__oauth = SimpleOAuthClientProvider(
+            self.__oauth = OAuthClientProvider(
                 server_url=self.server_url.replace("/mcp", ""),
                 client_metadata=OAuthClientMetadata.model_validate(
                     client_metadata_dict

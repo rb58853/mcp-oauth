@@ -175,7 +175,7 @@ class CallbackFunctions:
             payload = self.body | get_params_from_uri(authorization_url)
             authorization_url = authorization_url.split("?")[0]
 
-            response = requests.post(
+            response:requests.Response = requests.post(
                 authorization_url,
                 data=payload,
                 allow_redirects=self.body is None,
@@ -185,6 +185,10 @@ class CallbackFunctions:
             if response.status_code in (301, 302, 303, 307, 308):
                 redirect_url = response.headers["Location"]
                 requests.post(redirect_url, data=payload)
+            if response.status_code == 400:
+                self.callback_server.force_stop_wait()
+                raise Exception(response.text)
+                
         else:
             response = requests.get(authorization_url)
             if response.status_code == 200:

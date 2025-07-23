@@ -280,3 +280,20 @@ Healthy and practical contributions from the community are welcome. This reposit
 ## License
 
 MIT License. See [`license`](license).
+
+> ## 🚨 **Important**
+>
+> Para crear el servidor OAuth, es imprescindible agregar la direccion completa del OAuth server (sin `"/mcp"` al final) al MCP Server en el parametro `auth.resource_server_url`. Suele pasar que al montar los MCP en FastAPI se agrega un router a la direccion raiz de la API, entonces `resource_server_url = api_root/new_router` donde `new_router` debe coincidir con `fastapp.mount("/new_router",mcp_server.streamable_http_app())`.
+
+```python
+# api.py
+    mcp: FastMCP = FastMCP(
+        ...
+        auth=AuthSettings(
+            issuer_url=...,
+            required_scopes=...,
+            #Aqui va la direccion completa:
+            resource_server_url=f"{api_root}/new_router", 
+        )
+    )
+```

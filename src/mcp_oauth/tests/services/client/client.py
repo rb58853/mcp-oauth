@@ -10,14 +10,18 @@ from mcp.client.streamable_http import streamablehttp_client
 def sample_mcp_client():
     # Es necesario tener un servidor MCP corriendo en la direccion http://127.0.0.1:8000//example-server/mcp por httpstream
     server_url: str = "http://127.0.0.1:8000/example-server/mcp"
-    # server_url: str = "https://api.githubcopilot.com/mcp/"
+    server_url: str = "https://api.githubcopilot.com/mcp/"
+
+    body: dict = {
+        "username": "user",
+        "password": "password",
+    }
 
     # Es necesario tener un servidor OAuth corriendo en la direccion http://localhost:9000
     oauth_client: OAuthClient = OAuthClient(
         client_name="sample_client",
         mcp_server_url=server_url,
-        # authorized_username="user",
-        # authorized_username_password="password",
+        # body=body,
     )
 
     async def open_session():

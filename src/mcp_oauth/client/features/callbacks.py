@@ -135,18 +135,15 @@ class CallbackServer:
 class CallbackFunctions:
     def __init__(
         self,
-        username: str,
-        password: str,
         port: int = 3030,
         sequre_site: bool = True,
         timeout: int = 300,
+        body: dict | None = None,
     ):
         self.port: int = port
-        self.username: str = username
-        self.password: str = password
         self.sequre_site: bool = sequre_site
         self.time_out: int = timeout
-
+        self.body: dict | None = body
         self.callback_server: CallbackServer = CallbackServer(port=self.port)
 
     async def callback_handler(self) -> tuple[str, str | None]:
@@ -174,15 +171,14 @@ class CallbackFunctions:
         ):
             raise Exception("No sequre site")
 
-        if self.username is not None and self.password is not None:
-            payload = {
-                "username": self.username,
-                "password": self.password,
-            } | get_params_from_uri(authorization_url)
+        if self.body is not None:
+            payload = self.body | get_params_from_uri(authorization_url)
             authorization_url = authorization_url.split("?")[0]
 
             response = requests.post(
-                authorization_url, data=payload, allow_redirects=False
+                authorization_url,
+                data=payload,
+                allow_redirects=self.body is None,
             )
 
             # Esto es para usar el form del post, ya que en la redireccion se pierden datos de credenciales y no se pude tocar el codigo fuente

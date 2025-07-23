@@ -15,18 +15,15 @@ class OAuthClient:
         self,
         client_name: str,
         mcp_server_url: str,
-        authorized_username: str = None,
-        authorized_username_password: str = None,
         redirect_uris: list[str] = ["http://localhost:3030/callback"],
         redirect_uri_port=3030,
+        body: dict | None = None,
     ):
         """
         Initialize the OAuthClient with the necessary parameters.
 
         :param str client_name: Name of the client.
         :param str mcp_server_url: URL of the MCP server.
-        :param str authorized_username: Username for authorization.
-        :param str authorized_username_password: Password for the authorized username.
         :param list[str] redirect_uris: List of redirect URIs for the OAuth flow.
         :param int redirect_uri_port: Port for the redirect URI (default is 3030).
         :return: None
@@ -34,9 +31,7 @@ class OAuthClient:
         self.client_name: str = client_name
         self.redirect_uri_port: int = redirect_uri_port
         self.redirect_uris = redirect_uris
-        self.authorized_username: str = authorized_username
-        self.authorized_username_password: str = authorized_username_password
-
+        
         self.server_url: str = mcp_server_url
         self.token_storage = FileTokenStorage(server_name=self.server_url)
 
@@ -63,7 +58,7 @@ class OAuthClient:
             }
 
             self.__oauth = SimpleOAuthClientProvider(
-            # self.__oauth = OAuthClientProvider(
+                # self.__oauth = OAuthClientProvider(
                 server_url=self.server_url.replace("/mcp", ""),
                 client_metadata=OAuthClientMetadata.model_validate(
                     client_metadata_dict
@@ -80,7 +75,6 @@ class OAuthClient:
         """Delete credentials (token and client_info) from the current_server"""
         self.token_storage.delete_current_server_credentials_data()
 
-    
     def __get_oauht_from_mcp_server(self, mcp_server_url: str) -> str:
         """
         Get the OAuth server URL from the MCP server.

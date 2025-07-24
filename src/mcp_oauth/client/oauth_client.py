@@ -15,20 +15,15 @@ class OAuthClient:
         self,
         client_name: str,
         mcp_server_url: str,
-        oauth_server_url: str | None = None,
-        authorized_username: str = None,
-        authorized_username_password: str = None,
         redirect_uris: list[str] = ["http://localhost:3030/callback"],
-        redirect_uri_port=3030,
+        redirect_uri_port: int = 3030,
+        body: dict | None = None,
     ):
         """
         Initialize the OAuthClient with the necessary parameters.
 
         :param str client_name: Name of the client.
         :param str mcp_server_url: URL of the MCP server.
-        :param str oauth_server_url: URL of the OAuth server.
-        :param str authorized_username: Username for authorization.
-        :param str authorized_username_password: Password for the authorized username.
         :param list[str] redirect_uris: List of redirect URIs for the OAuth flow.
         :param int redirect_uri_port: Port for the redirect URI (default is 3030).
         :return: None
@@ -36,15 +31,10 @@ class OAuthClient:
         self.client_name: str = client_name
         self.redirect_uri_port: int = redirect_uri_port
         self.redirect_uris = redirect_uris
-        self.authorized_username: str = authorized_username
-        self.authorized_username_password: str = authorized_username_password
 
-        self.server_url: str | None = None
-        if oauth_server_url is not None:
-            self.server_url = oauth_server_url
-        else:
-            self.server_url = self.__get_oauht_from_mcp_server(mcp_server_url)
+        self.body: dict | None = body
 
+        self.server_url: str = mcp_server_url
         self.token_storage = FileTokenStorage(server_name=self.server_url)
 
         self.__oauth: SimpleOAuthClientProvider | None = None
@@ -57,9 +47,8 @@ class OAuthClient:
 
         try:
             callback_functions: CallbackFunctions = CallbackFunctions(
-                username=self.authorized_username,
-                password=self.authorized_username_password,
                 port=self.redirect_uri_port,
+                body=self.body,
             )
             client_metadata_dict = {
                 "client_name": self.client_name,
@@ -70,11 +59,11 @@ class OAuthClient:
             }
 
             self.__oauth = SimpleOAuthClientProvider(
+                # self.__oauth = OAuthClientProvider(
                 server_url=self.server_url.replace("/mcp", ""),
                 client_metadata=OAuthClientMetadata.model_validate(
                     client_metadata_dict
                 ),
-                # storage=FileTokenStorage(server_name=self.server_url),
                 storage=self.token_storage,
                 redirect_handler=callback_functions._default_redirect_handler,
                 callback_handler=callback_functions.callback_handler,
@@ -98,15 +87,15 @@ class OAuthClient:
 
         endpoints: list[str] = [
             ".well-known/oauth-protected-resource",
+            ".well-known/oauth-protected-resource/mcp",  # github mcp use case
             ".well-known/oauth-authorization-server",
             ".well-known/openid-configuration",
-            ".well-known/oauth-protected-resource/mcp",  # github mcp use case
         ]
-        mcp_server_url = (
-            mcp_server_url[: -len("/mcp")]
-            if mcp_server_url.endswith("/mcp")
-            else mcp_server_url
-        )
+        end_removables: list[str] = ["/mcp", "/mcp/"]
+        for end in end_removables:
+            if mcp_server_url.endswith(end):
+                mcp_server_url = mcp_server_url[: -len(end)]
+
         for endpoint in endpoints:
             response = requests.get(f"{mcp_server_url}/{endpoint}")
             if response.status_code == 200:
@@ -114,8 +103,8 @@ class OAuthClient:
                     "authorization_servers", None
                 )
                 if servers is not None:
-                    return servers[0]  # TODO: Using all oauth servers
+                    return servers[0]
 
-            raise ValueError(
-                f"Failed to retrieve OAuth server URL from MCP server, need manual oauth server url: {response.status_code}"
-            )
+        raise ValueError(
+            f"Failed to retrieve OAuth server URL from MCP server, need manual oauth server url: {response.status_code}"
+        )

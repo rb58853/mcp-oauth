@@ -74,6 +74,7 @@ class CallbackServer:
         self.thread = None
         self.callback_data = {"authorization_code": None, "state": None, "error": None}
         self.is_started: bool = False
+        self.__stop_wait: bool = False
 
     def _create_handler_with_data(self):
         """Create a handler class with access to callback data."""
@@ -109,7 +110,7 @@ class CallbackServer:
     def wait_for_callback(self, timeout=300):
         """Wait for OAuth callback with timeout."""
         start_time = time.time()
-        while time.time() - start_time < timeout:
+        while time.time() - start_time < timeout and not self.stop_wait:
             if self.callback_data["authorization_code"]:
                 return self.callback_data["authorization_code"]
             elif self.callback_data["error"]:
@@ -121,22 +122,28 @@ class CallbackServer:
         """Get the received state parameter."""
         return self.callback_data["state"]
 
+    @property
+    def stop_wait(self):
+        result = self.__stop_wait
+        self.__stop_wait = False
+        return result
+
+    def force_stop_wait(self):
+        self.__stop_wait = True
+
 
 class CallbackFunctions:
     def __init__(
         self,
-        username: str,
-        password: str,
         port: int = 3030,
         sequre_site: bool = True,
         timeout: int = 300,
+        body: dict | None = None,
     ):
         self.port: int = port
-        self.username: str = username
-        self.password: str = password
         self.sequre_site: bool = sequre_site
         self.time_out: int = timeout
-
+        self.body: dict | None = body
         self.callback_server: CallbackServer = CallbackServer(port=self.port)
 
     async def callback_handler(self) -> tuple[str, str | None]:
@@ -164,23 +171,30 @@ class CallbackFunctions:
         ):
             raise Exception("No sequre site")
 
-        if self.username is not None and self.password is not None:
-            payload = {
-                "username": self.username,
-                "password": self.password,
-            } | get_params_from_uri(authorization_url)
+        if self.body is not None:
+            payload = self.body | get_params_from_uri(authorization_url)
             authorization_url = authorization_url.split("?")[0]
 
-            response = requests.post(
-                authorization_url, data=payload, allow_redirects=False
+            response:requests.Response = requests.post(
+                authorization_url,
+                data=payload,
+                allow_redirects=self.body is None,
             )
 
             # Esto es para usar el form del post, ya que en la redireccion se pierden datos de credenciales y no se pude tocar el codigo fuente
             if response.status_code in (301, 302, 303, 307, 308):
                 redirect_url = response.headers["Location"]
                 requests.post(redirect_url, data=payload)
+            if response.status_code == 400:
+                self.callback_server.force_stop_wait()
+                raise Exception(response.text)
+                
         else:
-            webbrowser.open(authorization_url)
+            response = requests.get(authorization_url)
+            if response.status_code == 200:
+                webbrowser.open(authorization_url)
+            if response.status_code == 400:
+                self.callback_server.force_stop_wait()
 
 
 def get_params_from_uri(url: str):

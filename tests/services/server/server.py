@@ -1,35 +1,14 @@
-from mcp_oauth import (
-    OAuthServer,
-    SimpleAuthSettings,
-    AuthServerSettings,
-)
+from mcp_oauth import OAuthServer
 from uvicorn import Config, Server
 from .api import app, server_settings
 import asyncio
 import logging
-import os
 
 logger = logging.getLogger(__name__)
 
 
 def run_oauth_server():
-    server_settings: AuthServerSettings = AuthServerSettings(
-        host="127.0.0.1",
-        port=9000,
-        server_url="http://127.0.0.1:9000",
-        auth_callback_path="http://127.0.0.1:9000/login",
-    )
-
-    # You can use just SimpleAuthSettings(). Next is the base configuration
-    auth_settings: SimpleAuthSettings = SimpleAuthSettings(
-        superusername=os.getenv("SUPERUSERNAME"),
-        superuserpassword=os.getenv("SUPERUSERPASSWORD"),
-        mcp_scope="user",
-    )
-
-    oauth_server: OAuthServer = OAuthServer(
-        server_settings=server_settings, auth_settings=auth_settings
-    )
+    oauth_server: OAuthServer = OAuthServer()
     oauth_server.run_starlette_server()
 
 

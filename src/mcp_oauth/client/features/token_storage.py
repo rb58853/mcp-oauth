@@ -31,11 +31,13 @@ class FileTokenStorage(TokenStorage):
                 )
         if CRIPTOGRAFY_KEY is None:
             raise Exception(
-                'CRIPTOGRAFY_KEY is `None`, you need add the variable named `"CRIPTOGRAFY_KEY"` to `.env` file. You can use this code \n\
-        ```\n\
-        from mcp_oauth.utils.criptografy_key import generate_criptografy_key\n\
-        generate_criptografy_key()\n\
-        ```'
+                """
+                CRIPTOGRAFY_KEY is `None`, you need add the variable named `"CRIPTOGRAFY_KEY"` to `.env` file. You can use this code \n\
+                ```python
+                from mcp_oauth.utils.criptografy_key import generate_criptografy_key
+                generate_criptografy_key()
+                ```
+                """
             )
 
     async def get_tokens(self) -> OAuthToken | None:

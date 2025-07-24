@@ -11,7 +11,7 @@ import os
 
 
 def sample_mcp_client():
-    settings:ServerSettings = my_example_server()
+    settings:ServerSettings = github_mcp_server()
 
     async def open_session():
         print("📡 Opening StreamableHTTP transport connection with auth...")

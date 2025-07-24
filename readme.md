@@ -146,15 +146,19 @@ def create_mcp_server(settings: ServerSettings = ServerSettings()) -> FastMCP:
         validate_resource=settings.oauth_strict,
     )
     
+    name: str = "example-server"
+    resource_server_url: str = f"{settings.server_url}{name}"
+
     mcp: FastMCP = FastMCP(
-        name="example-server",
-        instructions="This server specializes in private operations on user profile data",
+        name=name,
+        instructions="This server specializes in private operations of user profiles data",
         debug=True,
+        # Auth configuration for RS mode
         token_verifier=token_verifier,
         auth=AuthSettings(
             issuer_url=settings.auth_server_url,
             required_scopes=[settings.mcp_scope],
-            resource_server_url=settings.server_url,
+            resource_server_url=AnyHttpUrl(resource_server_url),
         ),
     )
 
@@ -172,14 +176,15 @@ def create_mcp_server(settings: ServerSettings = ServerSettings()) -> FastMCP:
     return mcp
 ```
 
+> **🚨 Important Note:** When setting up the OAuth server, it is essential to provide the full OAuth server URL (excluding the `"/mcp"` suffix) in the MCP Server configuration under the parameter `auth.resource_server_url`. It is common when deploying MCP instances with FastAPI to mount a router at the API root path. Therefore, the `resource_server_url` should be set as `api_root/new_router`, where `new_router` matches the path used in `fastapp.mount("/new_router", mcp_server.streamable_http_app())`.
+
 ### Client
 
 To create a client, import `OAuthClient` and provide the following arguments:
 
-* `client_name [str]`: client application name.
-* `server_url [str]`: MCP server address (not the OAuth server).
-* `authorized_username [str]`: optionally, the authorized superuser username on the server. If credentials are provided in code, authentication will be automatic; otherwise, a login page will be shown in the browser.
-* `authorized_username_password [str]`: optionally, the authorized superuser password.
+* `client_name (str)`: client application name.
+* `server_url (str)`: MCP server address (not the OAuth server).
+* `body (dic[str,any] | None)`: When submitting data via a POST request, the request body typically contains the form data in JSON format. For example: `{ "username": "user", ... }`; this allows the client to send structured information such as user credentials or other form fields as part of the request payload.
 
 This client is designed to facilitate the internal process. It is only necessary to configure the above and pass the associated `.oauth` property to the `streamablehttp_client`, as exemplified below:
 
@@ -193,12 +198,10 @@ from mcp.client.streamable_http import streamablehttp_client
 
 def sample_mcp_client():
     server_url: str = "http://127.0.0.1:8000/example-server/mcp"
-    oauth_server_url: str = "http://127.0.0.1:9000"
     oauth_client: OAuthClient = OAuthClient(
         client_name="sample_client",
         mcp_server_url=server_url,
-        # authorized_username="user",
-        # authorized_username_password="password",
+        body=None
     )
 
     async def open_session():
@@ -229,46 +232,21 @@ def sample_mcp_client():
 
 The developer documentation exposes the functionalities and project flow, facilitating understanding for external developers who want to update or extend the code. Currently, this documentation is being written and is not fully available. It can be provisionally consulted [here](./doc/development.md).
 
-## Version History
+## Current Status / Main Features
 
-### v0.0.1
+* 🛠️ **Simple In-Memory OAuth Server:**  
+  Authentication via superuser credentials with POST (auto) and GET (HTML login) methods; no refresh tokens yet.
 
-* Simple OAuth server running in memory.
-* Does not include Refresh token in this version.
-* Authentication via superuser credentials (username and password).
-* Uses `"POST"` method for automatic login with credentials from environment variables, and `"GET"` for login via HTML page.
-* Automated OAuth client with re-login on authorization failures.
-* Simple token storage in filesystem with encryption using `jose-python`.
+* 🤖 **Automated OAuth Client:**  
+  Auto login with auth-servers; supports POST requests with body dictionary for login; auto-detects OAuth server from MCP URL with option to override.
 
-### v0.0.2
+* 🔐 **Token Storage & Security:**  
+  Encrypted token storage using `jose-python`; basic exception handling including null encryption key warnings.
 
-* Minor lexicographical errors in secure URLs have been fixed.
-* The loadenv function was added before any loading process to ensure that local environment variables are always loaded.
-* Necessary dependencies for the package have been added.
+* 🚀 **Dev Convenience:**  
+  Includes `QuickOAuthServerHost` class to simplify OAuth server setup; fixes minor bugs and auto-loads local environment variables before starting.
 
-### v0.0.3
-
-* The `QuickOAuthServerHost` class has been implemented to simplify the creation of an OAuth server.
-
-* Exception handling has been incorporated:
-  * **Null cryptography key:** guidance on how to address this scenario.
-
-### v0.0.4
-
-* The OAuth server is now detected automatically. It is only necessary to provide the MCP server to identify the corresponding OAuth server. Alternatively, you can continue to specify the OAuth server as a parameter, which will override the values derived from the mcp_server.
-
-    ```python
-        oauth_client: OAuthClient = OAuthClient(
-        mcp_server_url=my_mcp_server_url, #required
-        oauth_server_url=my_oauth_server_url, #optional
-        ...
-        )
-    ```
-
-### v0.0.5
-
-* Ahora la deteccion del servidor oauth se hace en el flujo del cliente, normalmente esta implementado asi en el codigo fuente, pero se arreglo un problema con las path del servidor oauth para que funcione correctamente.
-* Ahora al cliente se le pasa un body, un diccionario que sea enviado en peticiones post. Si body tiene valor y no es None, entonces se enviaran los valores de este body por el cuerpo de la peticion post.
+[See changelog](./changelog.md)
 
 ## Project Status
 
@@ -281,20 +259,3 @@ Healthy and practical contributions from the community are welcome. This reposit
 ## License
 
 MIT License. See [`license`](license).
-
-> ## 🚨 **Important**
->
-> Para crear el servidor OAuth, es imprescindible agregar la direccion completa del OAuth server (sin `"/mcp"` al final) al MCP Server en el parametro `auth.resource_server_url`. Suele pasar que al montar los MCP en FastAPI se agrega un router a la direccion raiz de la API, entonces `resource_server_url = api_root/new_router` donde `new_router` debe coincidir con `fastapp.mount("/new_router",mcp_server.streamable_http_app())`.
-
-```python
-# api.py
-    mcp: FastMCP = FastMCP(
-        ...
-        auth=AuthSettings(
-            issuer_url=...,
-            required_scopes=...,
-            #Aqui va la direccion completa:
-            resource_server_url=f"{api_root}/new_router", 
-        )
-    )
-```

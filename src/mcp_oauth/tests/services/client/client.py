@@ -1,34 +1,24 @@
 from mcp.client.session import ClientSession
 from mcp.shared.exceptions import McpError
 from client.oauth_client import OAuthClient
+from .example_servers.server_settings import ServerSettings
+from .example_servers.servers import my_example_server, github_mcp_server
 
 import asyncio
 from datetime import timedelta
 from mcp.client.streamable_http import streamablehttp_client
+import os
 
 
 def sample_mcp_client():
-    # Es necesario tener un servidor MCP corriendo en la direccion http://127.0.0.1:8000//example-server/mcp por httpstream
-    server_url: str = "http://127.0.0.1:8000/example-server/mcp"
-    # server_url: str = "https://api.githubcopilot.com/mcp/"
-
-    body: dict = {
-        "username": "user",
-        "password": "password",
-    }
-
-    # Es necesario tener un servidor OAuth corriendo en la direccion http://localhost:9000
-    oauth_client: OAuthClient = OAuthClient(
-        client_name="sample_client",
-        mcp_server_url=server_url,
-        body=body,
-    )
+    settings:ServerSettings = my_example_server()
 
     async def open_session():
         print("📡 Opening StreamableHTTP transport connection with auth...")
         async with streamablehttp_client(
-            url=server_url,
-            auth=oauth_client.oauth,
+            url=settings.server_url,
+            headers=settings.headers,
+            auth=settings.oauth,
             timeout=timedelta(seconds=60),
         ) as (read_stream, write_stream, get_session_id):
             print("🤝 Initializing MCP session...")
@@ -36,7 +26,7 @@ def sample_mcp_client():
                 await session.initialize()
                 print("✨ Session initialization complete!")
 
-                print(f"\n✅ Connected to MCP server at {server_url}")
+                print(f"\n✅ Connected to MCP server at {settings.server_url}")
                 if get_session_id:
                     session_id = get_session_id()
                     if session_id:

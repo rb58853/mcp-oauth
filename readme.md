@@ -268,6 +268,7 @@ The developer documentation exposes the functionalities and project flow, facili
 ### v0.0.5
 
 * Ahora la deteccion del servidor oauth se hace en el flujo del cliente, normalmente esta implementado asi en el codigo fuente, pero se arreglo un problema con las path del servidor oauth para que funcione correctamente.
+* Ahora al cliente se le pasa un body, un diccionario que sea enviado en peticiones post. Si body tiene valor y no es None, entonces se enviaran los valores de este body por el cuerpo de la peticion post.
 
 ## Project Status
 

@@ -16,7 +16,7 @@ class OAuthClient:
         client_name: str,
         mcp_server_url: str,
         redirect_uris: list[str] = ["http://localhost:3030/callback"],
-        redirect_uri_port=3030,
+        redirect_uri_port: int = 3030,
         body: dict | None = None,
     ):
         """
@@ -58,8 +58,8 @@ class OAuthClient:
                 "token_endpoint_auth_method": "client_secret_post",
             }
 
-            # self.__oauth = SimpleOAuthClientProvider(
-            self.__oauth = OAuthClientProvider(
+            self.__oauth = SimpleOAuthClientProvider(
+                # self.__oauth = OAuthClientProvider(
                 server_url=self.server_url.replace("/mcp", ""),
                 client_metadata=OAuthClientMetadata.model_validate(
                     client_metadata_dict
